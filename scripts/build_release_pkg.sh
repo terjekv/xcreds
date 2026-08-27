@@ -22,6 +22,9 @@ unsigned_package="${work_dir}/XCreds-unsigned.pkg"
 signed_package="${work_dir}/XCreds-signed.pkg"
 expanded_package="${work_dir}/expanded-package"
 
+# productsign can leave a small, invalid output file when signing fails.
+trap '/bin/rm -f "${signed_package}"' EXIT
+
 for tool in xcodebuild codesign pkgbuild productsign pkgutil ditto; do
     if ! command -v "${tool}" >/dev/null 2>&1; then
         echo "Required tool not found: ${tool}" >&2
