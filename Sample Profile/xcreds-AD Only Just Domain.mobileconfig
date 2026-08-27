@@ -12,11 +12,11 @@
 			<key>PayloadDisplayName</key>
 			<string>XCreds</string>
 			<key>PayloadIdentifier</key>
-			<string>com.github.erikberglund.ProfileCreator.47F59CD0-E476-4016-A8C6-82837B61C7CE.com.twocanoes.xcreds.F5B79C66-146F-4F8A-9237-CAF10606615C.11BE4B70-7A81-4351-A799-6B6BCBCF0900.C499E48D-61A5-4463-BB5A-FFFB14936411.0C06D77A-983C-43D4-939E-AA6AF0AF9AFA</string>
+			<string>com.github.erikberglund.ProfileCreator.47F59CD0-E476-4016-A8C6-82837B61C7CE.no.uio.math.xcreds.F5B79C66-146F-4F8A-9237-CAF10606615C.11BE4B70-7A81-4351-A799-6B6BCBCF0900.C499E48D-61A5-4463-BB5A-FFFB14936411.0C06D77A-983C-43D4-939E-AA6AF0AF9AFA</string>
 			<key>PayloadOrganization</key>
 			<string></string>
 			<key>PayloadType</key>
-			<string>com.twocanoes.xcreds</string>
+			<string>no.uio.math.xcreds</string>
 			<key>PayloadUUID</key>
 			<string>0C06D77A-983C-43D4-939E-AA6AF0AF9AFA</string>
 			<key>PayloadVersion</key>

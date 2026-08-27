@@ -9,9 +9,6 @@ echo manifest: $update_manifest
 echo upload: $upload
 ###########################
 
-if [ -e "${SRC_PATH}/../build/bitbucket_creds.sh" ] ; then 
-	source "${SRC_PATH}/../build/bitbucket_creds.sh"
-fi
 if [ -e /Applications/DropDMG.app ]; then 
 	osascript -e 'tell application "DropDMG" to get version'
 fi
@@ -31,7 +28,6 @@ else
 		exit -1
 	fi
 fi
-carthage update
 xcodebuild -resolvePackageDependencies
 
 
@@ -51,15 +47,15 @@ marketing_version=$(sed -n '/MARKETING_VERSION/{s/MARKETING_VERSION = //;s/;//;s
 date=$(date)
 
 
-/usr/libexec/PlistBuddy   -c "Set :pfm_last_modified \"${date}\"" "${PROJECT_FOLDER}/Profile Manifest/com.twocanoes.xcreds.plist"
-/usr/libexec/PlistBuddy   -c "Set :pfm_description  \"XCreds ${marketing_version} (${buildNumber}) OAuth Settings\"" "${PROJECT_FOLDER}/Profile Manifest/com.twocanoes.xcreds.plist"
+/usr/libexec/PlistBuddy   -c "Set :pfm_last_modified \"${date}\"" "${PROJECT_FOLDER}/Profile Manifest/no.uio.math.xcreds.plist"
+/usr/libexec/PlistBuddy   -c "Set :pfm_description  \"XCreds ${marketing_version} (${buildNumber}) OAuth Settings\"" "${PROJECT_FOLDER}/Profile Manifest/no.uio.math.xcreds.plist"
 
 if  [ -n "${update_manifest}" ];  then
 	echo "getting current manifest version"
-	curr_vers=$(/usr/libexec/PlistBuddy   -c "Print :pfm_version" "${PROJECT_FOLDER}/Profile Manifest/com.twocanoes.xcreds.plist")
+	curr_vers=$(/usr/libexec/PlistBuddy   -c "Print :pfm_version" "${PROJECT_FOLDER}/Profile Manifest/no.uio.math.xcreds.plist")
 	curr_vers=$((${curr_vers}+1))
 	echo "setting version to  : ${curr_vers}"
-	/usr/libexec/PlistBuddy   -c "Set :pfm_version ${curr_vers}" "${PROJECT_FOLDER}/Profile Manifest/com.twocanoes.xcreds.plist"	
+	/usr/libexec/PlistBuddy   -c "Set :pfm_version ${curr_vers}" "${PROJECT_FOLDER}/Profile Manifest/no.uio.math.xcreds.plist"
 fi
 
 

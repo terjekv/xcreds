@@ -882,10 +882,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DSQueryable {
             DefaultsOverride.standardOverride.register(defaults: defaultsDict as! [String : Any])
         }
 
-        VersionCheck.shared.reportLicenseUsage(event: .checkin) { isSuccess in
-            print(isSuccess)
-        }
-
         let infoPlist = Bundle.main.infoDictionary
 
         if let infoPlist = infoPlist, let build = infoPlist["CFBundleVersion"] {
@@ -919,19 +915,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DSQueryable {
 
     }
     func checkForUpdates() {
-        let thisAppVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        let thisAppBundleID = Bundle.main.bundleIdentifier
-
-        if let thisAppVersion = thisAppVersion, let thisAppBundleID = thisAppBundleID,
-           let thisAppVersionFloat = Float(thisAppVersion){
-
-            VersionCheck.shared.versionForIdentifier(identifier: thisAppBundleID, version: thisAppVersion) { isSuccess, version in
-
-                if let versionFloat = Float(version),!thisAppVersion.isEmpty, !version.isEmpty, thisAppVersionFloat < versionFloat {
-                    TCSLogErrorWithMark("New version available: \(thisAppVersion) < \(version)")
-                }
-            }
-        }
+        TCSLogWithMark("Automatic update checks are unavailable in this build")
     }
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
@@ -978,24 +962,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, DSQueryable {
     }
 
     func updatePrefsFromDS(){
-        if let currentUser = PasswordUtils.getCurrentConsoleUserRecord() {
-
-            do {
-                let attributesArray = try currentUser.recordDetails(forAttributes: nil)
-                for currAttribute in attributesArray {
-                    if let key = currAttribute.key as? String, key.hasPrefix("dsAttrTypeNative:_xcreds"), let value = currAttribute.value as? Array<String>, let lastValue = value.last {
-                        let components = key.components(separatedBy: ":")
-                        if let strippedKey = components.last{
-                            UserDefaults.standard.set(lastValue, forKey:strippedKey)
-                        }
-                    }
-                }
-            }
-            catch {
-                TCSLogWithMark("could not get attributes from user")
+        Task { @MainActor in
+            let preferences = await PasswordUtils.currentConsoleUserXCredsPreferences()
+            for (key, value) in preferences {
+                UserDefaults.standard.set(value, forKey: key)
             }
         }
-
     }
 }
-

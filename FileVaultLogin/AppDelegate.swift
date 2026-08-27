@@ -16,7 +16,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        UserDefaults.standard.addSuite(named: "com.twocanoes.xcreds")
+        UserDefaults.standard.addSuite(named: "no.uio.math.xcreds")
 
         TCSLogWithMark()
         switch  helperToolManager.manageHelperTool(action: .install) {
@@ -83,4 +83,3 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 
 }
-

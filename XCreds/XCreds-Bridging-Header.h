@@ -12,12 +12,10 @@
 #import "TCSKeychain.h"
 #import "TCSUnifiedLogger.h"
 #import "TCTaskHelper.h"
-#if !defined(AUTOFILL_TARGET) && !defined(FILEVAULTLOGIN_TARGET) && !defined(FILEVAULTLOGINHELPER_TARGET)
-#import <ProductLicense/ProductLicense.h>
-#endif
 #import "TCSLoginWindowUtilities.h"
 #import "DNSResolver.h"
 #import "TCTaskWrapperWithBlocks.h"
+#import "LegacyKeychainBridge.h"
 
 // Kerb bits
 #import "KerbUtil.h"

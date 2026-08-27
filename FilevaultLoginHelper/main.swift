@@ -8,7 +8,7 @@
 import Foundation
 import os.log
  
-let log = Logger(subsystem: "com.twocanoes.xcreds", category: "daemon")
+let log = Logger(subsystem: "no.uio.math.xcreds", category: "daemon")
 @objc(HelperToolProtocol)
 public protocol HelperToolProtocol {
     func authFV(username:String, password:String, withReply reply: @escaping (Bool) -> Void)
@@ -110,12 +110,11 @@ class HelperToolDelegate: NSObject, NSXPCListenerDelegate, HelperToolProtocol {
 }
 
 // Set up and start the XPC listener.
-UserDefaults.standard.addSuite(named: "com.twocanoes.xcreds")
+UserDefaults.standard.addSuite(named: "no.uio.math.xcreds")
 
 let delegate = HelperToolDelegate()
-let listener = NSXPCListener(machServiceName: "com.twocanoes.FileVaultLoginHelper")
+let listener = NSXPCListener(machServiceName: "no.uio.math.xcreds.filevaultloginhelper")
 listener.delegate = delegate
 listener.resume()
 RunLoop.main.run()
-
 

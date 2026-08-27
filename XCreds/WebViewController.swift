@@ -442,8 +442,4 @@ extension WKWebView {
             }
         }
     }
-
-    func refreshCookies() {
-        self.configuration.processPool = WKProcessPool()
-    }
 }

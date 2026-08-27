@@ -22,7 +22,7 @@ enum HelperToolAction {
 
 class HelperToolManager: ObservableObject {
     private var helperConnection: NSXPCConnection?
-    let helperToolIdentifier = "com.twocanoes.FileVaultLoginHelper"
+    let helperToolIdentifier = "no.uio.math.xcreds.filevaultloginhelper"
      var isHelperToolInstalled: Bool = false
     @Published var message: String = "Checking..."
     var status: String {

@@ -58,18 +58,18 @@ class StatusMenuController: NSObject, NSMenuItemValidation {
     @IBOutlet weak var filevaultLoginEnabledMenuItem: NSMenuItem!
     override func awakeFromNib() {
 
-        let currentUser = PasswordUtils.getCurrentConsoleUserRecord()
-        if let userNames = try? currentUser?.values(forAttribute: "dsAttrTypeNative:_xcreds_oidc_username") as? [String], userNames.count>0, let username = userNames.first {
-            oidcUsername = username
-
-        }
-        else if let oidcUsernamePrefs = UserDefaults.standard.string(forKey:"_xcreds_oidc_username" )
-        {
-            oidcUsername = oidcUsernamePrefs
-        }
-        if let userNames = try? currentUser?.values(forAttribute: "dsAttrTypeNative:_xcreds_activedirectory_kerberosPrincipal") as? [String], userNames.count>0, let username = userNames.first {
-            kerberosPrincipalName = username
-
+        Task { @MainActor in
+            let currentUser = await PasswordUtils.currentConsoleUserInfo()
+            if let username = currentUser?.oidcUsername {
+                oidcUsername = username
+            }
+            else if let oidcUsernamePrefs = UserDefaults.standard.string(forKey:"_xcreds_oidc_username" )
+            {
+                oidcUsername = oidcUsernamePrefs
+            }
+            if let username = currentUser?.kerberosPrincipal {
+                kerberosPrincipalName = username
+            }
         }
 
 
@@ -430,6 +430,5 @@ class StatusMenuController: NSObject, NSMenuItemValidation {
 
     }
 }
-
 
 

@@ -4,6 +4,7 @@
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
 *UserInterfaceState.xcuserstate
+xcuserdata/
 Carthage/
 auth.db
 build/
@@ -54,4 +55,3 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
-

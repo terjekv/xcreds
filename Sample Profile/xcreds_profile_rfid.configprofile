@@ -14,7 +14,7 @@
 <key>PayloadOrganization</key>
 <string></string>
 <key>PayloadType</key>
-<string>com.twocanoes.xcreds</string>
+<string>no.uio.math.xcreds</string>
 <key>PayloadUUID</key>
 <string>0C06D77A-983C-43D4-939E-AA6AF0AF9AFA</string>
 <key>PayloadVersion</key>
