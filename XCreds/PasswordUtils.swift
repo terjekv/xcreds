@@ -44,10 +44,122 @@ struct SecureTokenCredential {
     var username:String
     var password:String
 }
-class PasswordUtils: NSObject, DSQueryable {
+struct CurrentConsoleUserInfo {
+    let recordName: String
+    let oidcUsername: String?
+    let oidcFullUsername: String?
+    let kerberosPrincipal: String?
+}
+
+class PasswordUtils: NSObject {
 
     static let currentConsoleUserName: String = NSUserName()
     static let uid: String = String(getuid())
+    private static let openDirectoryQueue = DispatchQueue(
+        label: "no.uio.math.xcreds.open-directory",
+        qos: .default
+    )
+
+    private class func performOpenDirectoryOperation<T>(
+        _ operation: @escaping () -> T
+    ) async -> T {
+        await withCheckedContinuation { continuation in
+            openDirectoryQueue.async {
+                continuation.resume(returning: operation())
+            }
+        }
+    }
+
+    private class func firstStringValue(
+        in record: ODRecord,
+        forAttribute attribute: String
+    ) -> String? {
+        guard let values = try? record.values(forAttribute: attribute) as? [String] else {
+            return nil
+        }
+        return values.first
+    }
+
+    class func currentConsoleUserInfo() async -> CurrentConsoleUserInfo? {
+        await performOpenDirectoryOperation {
+            guard let record = getCurrentConsoleUserRecord() else {
+                return nil
+            }
+
+            return CurrentConsoleUserInfo(
+                recordName: record.recordName,
+                oidcUsername: firstStringValue(
+                    in: record,
+                    forAttribute: "dsAttrTypeNative:_xcreds_oidc_username"
+                ),
+                oidcFullUsername: firstStringValue(
+                    in: record,
+                    forAttribute: "dsAttrTypeNative:_xcreds_oidc_full_username"
+                ),
+                kerberosPrincipal: firstStringValue(
+                    in: record,
+                    forAttribute: "dsAttrTypeNative:_xcreds_activedirectory_kerberosPrincipal"
+                )
+            )
+        }
+    }
+
+    class func currentConsoleUserXCredsPreferences() async -> [String: String] {
+        await performOpenDirectoryOperation {
+            guard let record = getCurrentConsoleUserRecord(),
+                  let attributes = try? record.recordDetails(forAttributes: nil) else {
+                return [:]
+            }
+
+            var preferences = [String: String]()
+            for attribute in attributes {
+                guard let key = attribute.key as? String,
+                      key.hasPrefix("dsAttrTypeNative:_xcreds"),
+                      let values = attribute.value as? [String],
+                      let value = values.last,
+                      let strippedKey = key.components(separatedBy: ":").last else {
+                    continue
+                }
+                preferences[strippedKey] = value
+            }
+            return preferences
+        }
+    }
+
+    class func firstLocalRecordValue(
+        shortName: String,
+        attribute: String
+    ) async -> String? {
+        await performOpenDirectoryOperation {
+            guard let record = try? getLocalRecord(shortName) else {
+                return nil
+            }
+            return firstStringValue(in: record, forAttribute: attribute)
+        }
+    }
+
+    class func localRecordHasAnyValue(
+        shortName: String,
+        attributes: [String]
+    ) async -> Bool? {
+        await performOpenDirectoryOperation {
+            guard let record = try? getLocalRecord(shortName) else {
+                return nil
+            }
+            return attributes.contains { attribute in
+                firstStringValue(in: record, forAttribute: attribute) != nil
+            }
+        }
+    }
+
+    class func verifyLocalPassword(
+        userName: String,
+        userPass: String
+    ) async -> PasswordVerificationResult {
+        await performOpenDirectoryOperation {
+            isLocalPasswordValid(userName: userName, userPass: userPass)
+        }
+    }
 
     func localAdminCredentialsFromPrefs() -> LocalAdminCredentials? {
         if let aUsername = DefaultsOverride.standardOverride.string(forKey: PrefKeys.localAdminUserName.rawValue), let aPassword =

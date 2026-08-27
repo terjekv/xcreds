@@ -7,11 +7,10 @@
 #import "TCSReturnWindow.h"
 #import "TCSKeychain.h"
 #import "TCTaskHelper.h"
-
-#import <ProductLicense/ProductLicense.h>
 #include <membership.h>
 #import "DNSResolver.h"
 #import "TCTaskWrapperWithBlocks.h"
+#import "LegacyKeychainBridge.h"
 // Kerb bits
 #import "KerbUtil.h"
 #import "GSSItem.h"

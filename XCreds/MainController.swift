@@ -95,33 +95,36 @@ class MainController: NSObject, UpdateCredentialsFeedbackProtocol {
         updateFileVaultSkip()
         let shouldShowMenuBarSignInWithoutLoginWindowSignin = DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldShowMenuBarSignInWithoutLoginWindowSignin.rawValue)
 
-        if isLocalOnlyAccount() == false || shouldShowMenuBarSignInWithoutLoginWindowSignin==true {
-            let accountAndPassword = localAccountAndPassword()
-            if let password = accountAndPassword.1 {
-                scheduleManager.kerberosPassword = password
+        Task { @MainActor in
+            if await isLocalOnlyAccount() == false || shouldShowMenuBarSignInWithoutLoginWindowSignin==true {
+                let accountAndPassword = await localAccountAndPassword()
+                if let password = accountAndPassword.1 {
+                    scheduleManager.kerberosPassword = password
+                }
+                self.scheduleManager.startCredentialCheck()
             }
-            self.scheduleManager.startCredentialCheck()
         }
 
 
     }
 
-    func isLocalOnlyAccount() -> Bool {
-
+    func isLocalOnlyAccount() async -> Bool {
         let user = getConsoleUser()
-        guard let dsRecord =  try? PasswordUtils.getLocalRecord(user) else {
+        let attributes = [
+            "dsAttrTypeNative:_xcreds_activedirectory_kerberosPrincipal",
+            "dsAttrTypeNative:_xcreds_oidc_username"
+        ]
+        guard let hasDirectoryIdentity = await PasswordUtils.localRecordHasAnyValue(
+            shortName: user,
+            attributes: attributes
+        ) else {
             return false
         }
-        let kerbPrinc = try? dsRecord.values(forAttribute:"dsAttrTypeNative:_xcreds_activedirectory_kerberosPrincipal" )
 
         let kerbPrincPrefs = UserDefaults.standard.string(forKey:"_xcreds_activedirectory_kerberosPrincipal" )
-
-        let oidcUsername = try? dsRecord.values(forAttribute:"dsAttrTypeNative:_xcreds_oidc_username" )
-
         let oidcUsernamePrefs = UserDefaults.standard.string(forKey:"_xcreds_oidc_username" )
 
-
-        if kerbPrinc == nil && oidcUsername == nil && kerbPrincPrefs == nil && oidcUsernamePrefs == nil {
+        if hasDirectoryIdentity == false && kerbPrincPrefs == nil && oidcUsernamePrefs == nil {
             TCSLogWithMark("no kerberos principal and no oidc username in local DS console user/prefs, so skipping showing window")
             return true
 
@@ -133,8 +136,18 @@ class MainController: NSObject, UpdateCredentialsFeedbackProtocol {
 
         TCSLogWithMark()
 
-        if isLocalOnlyAccount()==true && force==false{
-            TCSLogWithMark()
+        if force == false {
+            Task { @MainActor in
+                if await isLocalOnlyAccount() {
+                    TCSLogWithMark()
+                    return
+                }
+                showSignInWindow(
+                    force: true,
+                    forceLoginWindowType: forceLoginWindowType,
+                    hadPasswordFailure: hadPasswordFailure
+                )
+            }
             return
         }
 
@@ -286,15 +299,19 @@ class MainController: NSObject, UpdateCredentialsFeedbackProtocol {
         }
         let shouldShowMenuBarSignInWithoutLoginWindowSignin = DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldShowMenuBarSignInWithoutLoginWindowSignin.rawValue)
 
-        if shouldShowMenuBarSignInWithoutLoginWindowSignin == true && isLocalOnlyAccount() == true {
-            showSignInWindow(force:true,forceLoginWindowType: .cloud)
+        if shouldShowMenuBarSignInWithoutLoginWindowSignin == true {
+            Task { @MainActor in
+                if await isLocalOnlyAccount() {
+                    showSignInWindow(force:true,forceLoginWindowType: .cloud)
+                }
+            }
         }
 
 
     }
 
     //get local password either from keychain or prompt. If prompt, then it will save in keychain for next time. if keychain, get keychain and test to make sure it is valid.
-    func localAccountAndPassword() -> (String?,String?) {
+    func localAccountAndPassword() async -> (String?,String?) {
 
         
         let keychainUtil = KeychainUtil()
@@ -307,7 +324,7 @@ class MainController: NSObject, UpdateCredentialsFeedbackProtocol {
             let password = passwordItem.password
             
 
-            if case .success = PasswordUtils.isLocalPasswordValid(userName: PasswordUtils.currentConsoleUserName, userPass: password){
+            if case .success = await PasswordUtils.verifyLocalPassword(userName: PasswordUtils.currentConsoleUserName, userPass: password){
                 TCSLogWithMark("account name and password found: \(accountName)")
                 return (accountName,password)
             }
@@ -323,6 +340,11 @@ class MainController: NSObject, UpdateCredentialsFeedbackProtocol {
 
         }
 
+        return await promptForLocalAccountAndPassword(accountName: accountName)
+    }
+
+    @MainActor
+    private func promptForLocalAccountAndPassword(accountName: String) -> (String?, String?) {
         let promptPasswordWindowController = VerifyLocalPasswordWindowController()
 
         
@@ -332,12 +354,12 @@ class MainController: NSObject, UpdateCredentialsFeedbackProtocol {
         switch  promptPasswordWindowController.promptForLocalAccountAndChangePassword(username: PasswordUtils.currentConsoleUserName, newPassword: nil, shouldUpdatePassword: false) {
 
         case .success(let localUsernamePassword):
-            guard let localPassword = localUsernamePassword?.password, let localUsername = localUsernamePassword?.username else {
+            guard let localPassword = localUsernamePassword?.password else {
                 TCSLogWithMark( "No password returned")
                 return (nil,nil)
 
             }
-            let err = keychainUtil.updatePassword(serviceName: PrefKeys.password.rawValue,accountName:PrefKeys.password.rawValue, pass:localPassword, keychainPassword: localPassword)
+            let err = KeychainUtil().updatePassword(serviceName: PrefKeys.password.rawValue,accountName:PrefKeys.password.rawValue, pass:localPassword, keychainPassword: localPassword)
             if err == false {
                 TCSLogWithMark("Failed to store password in keychain")
                 return (nil,nil)
@@ -406,45 +428,47 @@ class MainController: NSObject, UpdateCredentialsFeedbackProtocol {
                         UserDefaults.standard.set(fullUsername, forKey:"_xcreds_oidc_full_username")
 
                         //if user oidc username doesn't exist in DS, write to a file in ~/L/AS for login window to migrate
-                        let currentUser = PasswordUtils.getCurrentConsoleUserRecord()
-                        if let userNames = try? currentUser?.values(forAttribute: "dsAttrTypeNative:_xcreds_oidc_username") as? [String], userNames.count>0, let username = userNames.first {
-                            TCSLogWithMark("Found existing username \(username) in DS")
+                        Task { @MainActor in
+                            let currentUser = await PasswordUtils.currentConsoleUserInfo()
+                            if let existingUsername = currentUser?.oidcUsername {
+                                TCSLogWithMark("Found existing username \(existingUsername) in DS")
 
-                        }
-                        else {
-                            TCSLogWithMark("No _xcreds_oidc_username found in DS so setting migrate file");
-                            let appSupportFolder = NSHomeDirectory() + "/Library/Application Support/XCreds"
-                            let plistPath = appSupportFolder + "/ds_info.plist"
+                            }
+                            else {
+                                TCSLogWithMark("No _xcreds_oidc_username found in DS so setting migrate file");
+                                let appSupportFolder = NSHomeDirectory() + "/Library/Application Support/XCreds"
+                                let plistPath = appSupportFolder + "/ds_info.plist"
 
-                            do {
-                                //check to see if appSupportFolder exists and if not, create
-                                if !FileManager.default.fileExists(atPath: appSupportFolder) {
-                                    TCSLogWithMark("Creating appSupport folder")
-                                    try FileManager.default.createDirectory(atPath: appSupportFolder, withIntermediateDirectories: true, attributes: nil)
-                                }
-                                if FileManager.default.fileExists(atPath: plistPath) {
-                                    TCSLogWithMark("plist already exists so remove it so we get the freshes value")
-                                    try FileManager.default.removeItem(at: URL(filePath: plistPath))
-                                }
-                                if let subValue = idTokenInfo["sub"] as? String, let issuerValue = idTokenInfo["iss"] as? String{
-                                    var dictToWrite = ["_xcreds_oidc_username":username,
-                                                       "_xcreds_oidc_full_username":fullUsername,
-                                                       "subValue":subValue,
-                                                       "issuerValue":issuerValue,
-                                                       "localuser":PasswordUtils.currentConsoleUserName]
-
-                                    if let kerberosPrincipalName = userInfo.kerberosPrincipalName {
-                                        dictToWrite["_xcreds_activedirectory_kerberosPrincipal"] = kerberosPrincipalName
+                                do {
+                                    //check to see if appSupportFolder exists and if not, create
+                                    if !FileManager.default.fileExists(atPath: appSupportFolder) {
+                                        TCSLogWithMark("Creating appSupport folder")
+                                        try FileManager.default.createDirectory(atPath: appSupportFolder, withIntermediateDirectories: true, attributes: nil)
                                     }
-                                    //write dictToWrite to file as plist
-                                    TCSLog("writing plist file: \(plistPath)")
-                                    try PropertyListEncoder().encode(dictToWrite).write(to: URL(fileURLWithPath: plistPath))
-                                }
-                            }
-                            catch {
-                                TCSLogWithMark("Error saving migrate file: \(error)")
-                            }
+                                    if FileManager.default.fileExists(atPath: plistPath) {
+                                        TCSLogWithMark("plist already exists so remove it so we get the freshes value")
+                                        try FileManager.default.removeItem(at: URL(filePath: plistPath))
+                                    }
+                                    if let subValue = idTokenInfo["sub"] as? String, let issuerValue = idTokenInfo["iss"] as? String{
+                                        var dictToWrite = ["_xcreds_oidc_username":username,
+                                                           "_xcreds_oidc_full_username":fullUsername,
+                                                           "subValue":subValue,
+                                                           "issuerValue":issuerValue,
+                                                           "localuser":PasswordUtils.currentConsoleUserName]
 
+                                        if let kerberosPrincipalName = userInfo.kerberosPrincipalName {
+                                            dictToWrite["_xcreds_activedirectory_kerberosPrincipal"] = kerberosPrincipalName
+                                        }
+                                        //write dictToWrite to file as plist
+                                        TCSLog("writing plist file: \(plistPath)")
+                                        try PropertyListEncoder().encode(dictToWrite).write(to: URL(fileURLWithPath: plistPath))
+                                    }
+                                }
+                                catch {
+                                    TCSLogWithMark("Error saving migrate file: \(error)")
+                                }
+
+                            }
                         }
                         if let kerberosPrincipalName = userInfo.kerberosPrincipalName {
                             UserDefaults.standard.set(kerberosPrincipalName, forKey:"_xcreds_activedirectory_kerberosPrincipal")
@@ -462,7 +486,8 @@ class MainController: NSObject, UpdateCredentialsFeedbackProtocol {
 
             self.windowController.window?.close()
             
-            let localAccountAndPassword = self.localAccountAndPassword()
+            Task { @MainActor in
+            let localAccountAndPassword = await self.localAccountAndPassword()
             
             TCSLogWithMark("local account: \(localAccountAndPassword.0 ?? "")")
             if credentials.password != nil, let localPassword=localAccountAndPassword.1, localPassword.count>0{
@@ -524,6 +549,7 @@ class MainController: NSObject, UpdateCredentialsFeedbackProtocol {
             }
 
             self.scheduleManager.startCredentialCheck()
+            }
 
         }
 
@@ -686,4 +712,3 @@ class MainController: NSObject, UpdateCredentialsFeedbackProtocol {
 
 
 }
-

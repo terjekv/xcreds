@@ -11,7 +11,7 @@ import AppKit
 @main
 class App {
     static func main() {
-        if let ud = UserDefaults(suiteName: "com.twocanoes.xcreds") {
+        if let ud = UserDefaults(suiteName: "no.uio.math.xcreds") {
             var delay = ud.integer(forKey: "overlayDelaySecs")
             if delay<10 {
                 delay = 10
@@ -122,7 +122,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.hidesOnDeactivate=false
         window.isOpaque=false
         window.level = .modalPanel
-        if let ud = UserDefaults(suiteName: "com.twocanoes.xcreds"),  let customTextString = ud.value(forKey: "cloudLoginText") {
+        if let ud = UserDefaults(suiteName: "no.uio.math.xcreds"),  let customTextString = ud.value(forKey: "cloudLoginText") {
             cloudLoginTextField.stringValue = customTextString as! String
             cloudLoginTextField.sizeToFit()
 
@@ -130,7 +130,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         
-        if let ud = UserDefaults(suiteName: "com.twocanoes.xcreds"),  ud.bool(forKey: PrefKeys.shouldSkipFileVaultLoginAdmin.rawValue) == true, ud.bool(forKey: PrefKeys.shouldShowCloudLoginByDefault.rawValue) == false {
+        if let ud = UserDefaults(suiteName: "no.uio.math.xcreds"),  ud.bool(forKey: PrefKeys.shouldSkipFileVaultLoginAdmin.rawValue) == true, ud.bool(forKey: PrefKeys.shouldShowCloudLoginByDefault.rawValue) == false {
             TCSLogWithMark("Setting filevault to unlock with admin in overlay since the security mech is not showing")
             if let secretKeeper = try? SecretKeeper(label: "XCreds Encryptor", tag: "XCreds Encryptor") {
                 
@@ -148,7 +148,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         TCSLogWithMark("starting overlay")
-        UserDefaults.standard.addSuite(named: "com.twocanoes.xcreds")
+        UserDefaults.standard.addSuite(named: "no.uio.math.xcreds")
 
         do {
 
@@ -183,7 +183,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        if let ud = UserDefaults(suiteName: "com.twocanoes.xcreds"){
+        if let ud = UserDefaults(suiteName: "no.uio.math.xcreds"){
 
             if ud.bool(forKey: "shouldShowCloudLoginByDefault") == true,
                returnFileExistedOnStart == false,
@@ -230,4 +230,3 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 
 }
-

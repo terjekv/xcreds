@@ -325,7 +325,7 @@ import OpenDirectory
     }
     func setupPrefs(){
         TCSLogWithMark()
-        UserDefaults.standard.addSuite(named: "com.twocanoes.xcreds")
+        UserDefaults.standard.addSuite(named: "no.uio.math.xcreds")
         let defaultsPath = Bundle(for: type(of: self)).path(forResource: "defaults", ofType: "plist")
 
         if let defaultsPath = defaultsPath {

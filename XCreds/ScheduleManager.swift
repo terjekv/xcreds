@@ -85,60 +85,62 @@ class ScheduleManager:NoMADUserSessionDelegate {
 
     }
     func checkADPasswordExpire(password:String) {
-        TCSLogWithMark()
+        Task { @MainActor in
+            TCSLogWithMark()
 
-        let adDomainFromPrefs = DefaultsOverride.standardOverride.string(forKey: PrefKeys.aDDomain.rawValue)
-        var allDomainsFromPrefs = DefaultsOverride.standardOverride.array(forKey: PrefKeys.additionalADDomainList.rawValue)  as? [String] ?? []
+            let adDomainFromPrefs = DefaultsOverride.standardOverride.string(forKey: PrefKeys.aDDomain.rawValue)
+            var allDomainsFromPrefs = DefaultsOverride.standardOverride.array(forKey: PrefKeys.additionalADDomainList.rawValue)  as? [String] ?? []
 
-        if let adDomainFromPrefs=adDomainFromPrefs  {
-            allDomainsFromPrefs.append(adDomainFromPrefs)
-        }
-        allDomainsFromPrefs = allDomainsFromPrefs.map { currVal in
-            currVal.uppercased()
-        }
+            if let adDomainFromPrefs=adDomainFromPrefs  {
+                allDomainsFromPrefs.append(adDomainFromPrefs)
+            }
+            allDomainsFromPrefs = allDomainsFromPrefs.map { currVal in
+                currVal.uppercased()
+            }
 
-        guard let user = try? PasswordUtils.getLocalRecord(getConsoleUser()),
-              let kerbPrincArray = user.value(forKey: "dsAttrTypeNative:_xcreds_activedirectory_kerberosPrincipal") as? Array <String>,
-              var kerbPrinc = kerbPrincArray.first else
-        {
-            return
-        }
-        if kerbPrinc.contains("@") == false, let adDomainFromPrefs = adDomainFromPrefs {
-            kerbPrinc = kerbPrinc + "@" + adDomainFromPrefs.stripped
-        }
-
-        if allDomainsFromPrefs.count>0,
-           let shortName = kerbPrinc.components(separatedBy: "@").first,
-            let specifiedDomain = kerbPrinc.components(separatedBy: "@").last,
-            specifiedDomain.isEmpty==false,
-            shortName.isEmpty==false,
-           allDomainsFromPrefs.contains(specifiedDomain.uppercased())==true
-        {
-            session = NoMADSession.init(domain: specifiedDomain, user: shortName)
-            TCSLogWithMark("NoMAD Login User: \(shortName), Domain: \(specifiedDomain)")
-            guard let session = session else {
-                TCSLogErrorWithMark("Could not create NoMADSession from SignIn window")
+            guard var kerbPrinc = await PasswordUtils.firstLocalRecordValue(
+                shortName: getConsoleUser(),
+                attribute: "dsAttrTypeNative:_xcreds_activedirectory_kerberosPrincipal"
+            ) else {
                 return
             }
-
-            session.useSSL = getManagedPreference(key: .LDAPOverSSL) as? Bool ?? false
-            session.userPass = password
-            session.delegate = self
-            session.recursiveGroupLookup = getManagedPreference(key: .RecursiveGroupLookup) as? Bool ?? false
-
-            if let ignoreSites = getManagedPreference(key: .IgnoreSites) as? Bool {
-
-                session.siteIgnore = ignoreSites
+            if kerbPrinc.contains("@") == false, let adDomainFromPrefs = adDomainFromPrefs {
+                kerbPrinc = kerbPrinc + "@" + adDomainFromPrefs.stripped
             }
 
-            if let ldapServers = getManagedPreference(key: .LDAPServers) as? [String] {
-                TCSLogWithMark("Adding custom LDAP servers")
+            if allDomainsFromPrefs.count>0,
+               let shortName = kerbPrinc.components(separatedBy: "@").first,
+                let specifiedDomain = kerbPrinc.components(separatedBy: "@").last,
+                specifiedDomain.isEmpty==false,
+                shortName.isEmpty==false,
+               allDomainsFromPrefs.contains(specifiedDomain.uppercased())==true
+            {
+                session = NoMADSession.init(domain: specifiedDomain, user: shortName)
+                TCSLogWithMark("NoMAD Login User: \(shortName), Domain: \(specifiedDomain)")
+                guard let session = session else {
+                    TCSLogErrorWithMark("Could not create NoMADSession from SignIn window")
+                    return
+                }
 
-                session.ldapServers = ldapServers
+                session.useSSL = getManagedPreference(key: .LDAPOverSSL) as? Bool ?? false
+                session.userPass = password
+                session.delegate = self
+                session.recursiveGroupLookup = getManagedPreference(key: .RecursiveGroupLookup) as? Bool ?? false
+
+                if let ignoreSites = getManagedPreference(key: .IgnoreSites) as? Bool {
+
+                    session.siteIgnore = ignoreSites
+                }
+
+                if let ldapServers = getManagedPreference(key: .LDAPServers) as? [String] {
+                    TCSLogWithMark("Adding custom LDAP servers")
+
+                    session.ldapServers = ldapServers
+                }
+
+                TCSLogWithMark("Attempt to authenticate user")
+                session.authenticate()
             }
-
-            TCSLogWithMark("Attempt to authenticate user")
-            session.authenticate()
         }
 
 
@@ -209,8 +211,7 @@ class ScheduleManager:NoMADUserSessionDelegate {
             let passwordItem =  keychainUtil.findPassword(serviceName: "xcreds ".appending(PrefKeys.refreshToken.rawValue),accountName:PrefKeys.refreshToken.rawValue)
             var hasValidRefreshToken = false
 
-            if  let _ = DefaultsOverride.standardOverride.string(forKey: PrefKeys.discoveryURL.rawValue),
-                let refreshAccountAndToken = passwordItem,
+            if  DefaultsOverride.standardOverride.string(forKey: PrefKeys.discoveryURL.rawValue) != nil,
                 let refreshToken = passwordItem?.password,
                     refreshToken != ""  {
                 hasValidRefreshToken = true
@@ -227,6 +228,7 @@ class ScheduleManager:NoMADUserSessionDelegate {
                 dateFormatter.formatOptions = [.withFullDate,.withFullTime]
 
 
+                Task { @MainActor in
                 var isLoginInFailedState = false
                 let ud = UserDefaults.standard
                 //
@@ -241,9 +243,10 @@ class ScheduleManager:NoMADUserSessionDelegate {
 
 
                         //last login failed. We can proceed only if there was a successful login at the login window.
-                        if let user = try? PasswordUtils.getLocalRecord(getConsoleUser()),
-                           let oidcLastLoginTimestampStringFromDSArray = user.value(forKey: "dsAttrTypeNative:_xcreds_oidc_lastLoginTimestamp") as? [String],
-                           let oidcLastLoginTimestampStringFromDS = oidcLastLoginTimestampStringFromDSArray.first,
+                        if let oidcLastLoginTimestampStringFromDS = await PasswordUtils.firstLocalRecordValue(
+                            shortName: getConsoleUser(),
+                            attribute: "dsAttrTypeNative:_xcreds_oidc_lastLoginTimestamp"
+                        ),
                            let oidcLastLoginTimestameDateFromLoginWindow = try? Date.ISO8601FormatStyle().parseStrategy.parse(oidcLastLoginTimestampStringFromDS),
                            oidcLastLoginTimestameDateFromLoginWindow > lastOIDCLoginFailTimestampDate {
 
@@ -261,7 +264,6 @@ class ScheduleManager:NoMADUserSessionDelegate {
                         return
                     }
 
-                Task{
                     if hasValidRefreshToken || DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldUseROPGForPasswordChangeChecking.rawValue) == true {
                     do{
                         try await tokenManager.oidc().getEndpoints()
@@ -295,7 +297,7 @@ class ScheduleManager:NoMADUserSessionDelegate {
                         let localCredFromKeychain =  keychainUtil.findPassword(serviceName: PrefKeys.password.rawValue,accountName:PrefKeys.password.rawValue)
 
                     
-                        guard let username = tokenManager.currOidcUsername(), let password  = localCredFromKeychain?.password else {
+                        guard let username = await tokenManager.currOidcUsername(), let password  = localCredFromKeychain?.password else {
                             TCSLogWithMark("no oidc username or password found so punting on checking via LDAP")
                             return
                         }

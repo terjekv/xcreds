@@ -67,69 +67,57 @@ class CredentialProviderViewController: ASCredentialProviderViewController {
 
             return
         }
-        var dsUsername:String?
-        let currentUser = PasswordUtils.getCurrentConsoleUserRecord()
-        if let userNames = try? currentUser?.values(forAttribute: "dsAttrTypeNative:_xcreds_oidc_full_username") as? [String], userNames.count>0, let username = userNames.first {
-            TCSLogWithMark()
-            dsUsername = username
+        Task { @MainActor in
+            let currentUser = await PasswordUtils.currentConsoleUserInfo()
+            let dsUsername = currentUser?.oidcFullUsername
+                ?? currentUser?.kerberosPrincipal
+                ?? currentUser?.recordName
 
-        }
-        else if let userNames = try? currentUser?.values(forAttribute: "dsAttrTypeNative:_xcreds_activedirectory_kerberosPrincipal") as? [String], userNames.count>0, let username = userNames.first {
-            TCSLogWithMark()
-            dsUsername = username
+            guard let dsUsername else {
+                TCSLogWithMark("Invalid dsUsername")
+                self.extensionContext.cancelRequest(withError: NSError(domain: "none", code: -1))
+                return
+            }
 
-        }
-        else {
-            
-            dsUsername=currentUser?.recordName
-        }
-        guard let dsUsername = dsUsername else {
-            TCSLogWithMark("Invalid dsUsername")
-            self.extensionContext.cancelRequest(withError: NSError(domain: "none", code: -1))
+            let passwordCredential = ASPasswordCredential(user: dsUsername, password: passwordItem.password)
+            let context = LAContext()
+            var error: NSError?
 
-            return
-        }
+            if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+                let reason = "XCreds Login Password"
 
-        let passwordCredential = ASPasswordCredential(user: dsUsername, password: passwordItem.password)
+                context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) {
+                    [weak self] success, authenticationError in
 
+                    DispatchQueue.main.async {
+                        if success {
+                            self?.extensionContext.completeRequest(withSelectedCredential: passwordCredential, completionHandler: nil)
 
-        let context = LAContext()
-        var error: NSError?
-
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            let reason = "XCreds Login Password"
-
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) {
-                [weak self] success, authenticationError in
-
-                DispatchQueue.main.async {
-                    if success {
-                        self?.extensionContext.completeRequest(withSelectedCredential: passwordCredential, completionHandler: nil)
-                        
-                    } else {
-                        self?.extensionContext.cancelRequest(withError: NSError(domain: "none", code: -1))
+                        } else {
+                            self?.extensionContext.cancelRequest(withError: NSError(domain: "none", code: -1))
+                        }
                     }
                 }
             }
-        }
-        else if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
-            let reason = "XCreds Login Password"
+            else if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+                let reason = "XCreds Login Password"
 
-            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) {
-                [weak self] success, authenticationError in
+                context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) {
+                    [weak self] success, authenticationError in
 
-                DispatchQueue.main.async {
-                    if success {
-                        self?.extensionContext.completeRequest(withSelectedCredential: passwordCredential, completionHandler: nil)
+                    DispatchQueue.main.async {
+                        if success {
+                            self?.extensionContext.completeRequest(withSelectedCredential: passwordCredential, completionHandler: nil)
 
-                    } else {
-                        self?.extensionContext.cancelRequest(withError: NSError(domain: "none", code: -1))
+                        } else {
+                            self?.extensionContext.cancelRequest(withError: NSError(domain: "none", code: -1))
+                        }
                     }
                 }
             }
-        }
-        else {
-            self.extensionContext.cancelRequest(withError: NSError(domain: "none", code: -1))
+            else {
+                self.extensionContext.cancelRequest(withError: NSError(domain: "none", code: -1))
+            }
         }
     }
 

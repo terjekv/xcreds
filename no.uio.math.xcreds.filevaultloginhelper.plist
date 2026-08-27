@@ -3,12 +3,12 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.twocanoes.FileVaultLoginHelper</string>
+	<string>no.uio.math.xcreds.filevaultloginhelper</string>
 	<key>BundleProgram</key>
 	<string>Contents/MacOS/FileVaultLoginHelper</string>
 	<key>MachServices</key>
 	<dict>
-		<key>com.twocanoes.FileVaultLoginHelper</key>
+		<key>no.uio.math.xcreds.filevaultloginhelper</key>
 		<true/>
 	</dict>
 </dict>

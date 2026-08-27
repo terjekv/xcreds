@@ -91,13 +91,10 @@ class ADLDAPPing {
                 (buffer as NSData).getBytes(&byte, range: NSRange(location: Int(cursor), length: 1))
                 cursor += 1
                 // we would appear to have a pointer, let's remember it
-                var ptr: UInt16 = 0
-                let d: [UInt8]  = [byte, (tag & ~marker)]
-                //				ptr += UnsafePointer<UInt16>(d).pointee
-                ptr += UnsafePointer(d).withMemoryRebound(to: UInt16.self,
-                                                          capacity: 1) {
-                                                            $0.pointee
-                }
+                // RFC 1035 stores the 14-bit compression offset in network byte
+                // order. Decode it explicitly instead of forming a pointer to
+                // temporary, potentially unaligned array storage.
+                let ptr = (UInt16(tag & ~marker) << 8) | UInt16(byte)
                 // check if we've seen it before already
                 if pointers.contains(ptr) {
                     throw DecodeError.cyclicPointer

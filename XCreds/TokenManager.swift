@@ -221,7 +221,7 @@ class TokenManager:DSQueryable {
             let localCredFromKeychain = localCredFromKeychain,
             DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldUseROPGForPasswordChangeChecking.rawValue) == true{
             TCSLogWithMark("Checking credentials using ROPG")
-            guard let oidcUsername = currOidcUsername() else {
+            guard let oidcUsername = await currOidcUsername() else {
                 throw ProcessTokenResult.error("no username for oidc config")
             }
             let shouldUseBasicAuthWithROPG = DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldUseBasicAuthWithROPG.rawValue)
@@ -270,11 +270,10 @@ class TokenManager:DSQueryable {
 
         }
     }
-    func currOidcUsername() -> String?{
-        let currentUser = PasswordUtils.getCurrentConsoleUserRecord()
+    func currOidcUsername() async -> String?{
+        let currentUser = await PasswordUtils.currentConsoleUserInfo()
 
-        if let userNames = try? currentUser?.values(forAttribute: "dsAttrTypeNative:_xcreds_oidc_full_username") as? [String], userNames.count>0, let username = userNames.first
-        {
+        if let username = currentUser?.oidcFullUsername {
             return username
         }
         else if let oidcUsernamePrefs = UserDefaults.standard.string(forKey:"_xcreds_oidc_full_username" ), oidcUsernamePrefs.isEmpty == false {
@@ -613,4 +612,3 @@ extension TokenManager {
         }
     }
 }
-

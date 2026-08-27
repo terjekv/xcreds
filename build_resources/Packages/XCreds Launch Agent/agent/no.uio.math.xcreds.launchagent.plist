@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.twocanoes.xcreds-launchagent</string>
+	<string>no.uio.math.xcreds.launchagent</string>
 	<key>ProcessType</key>
 	<string>Interactive</string>
 	<key>ProgramArguments</key>

@@ -19,7 +19,6 @@ source ${this_dir}/../../../build/github_creds.sh
 #echo "Uploading ${prebeta_filename}"
 if [ -f "${prebeta_filename}" ] &&  [ -n "${upload}" ]; then
 
-#	curl --progress-bar -X POST "https://${bitbucket_username}:${bitbucket_password}@api.bitbucket.org/2.0/repositories/twocanoes/xcreds/downloads" --form files=@"${prebeta_filename}" > /tmp/curl.log
 	owner="twocanoes"
 	GH_API="https://api.github.com"
 	repo="xcreds"
@@ -46,4 +45,3 @@ if [ -f "${prebeta_filename}" ] &&  [ -n "${upload}" ]; then
 	curl --data-binary @"$filename" -H "Authorization: token $github_api_token" -H "Content-Type: application/octet-stream" $GH_ASSET
 
 fi
-

@@ -3,17 +3,39 @@
 //
 //
 
-import ProductLicense
 @available(macOS, deprecated: 11)
 class XCredsUserSetup: XCredsBaseMechanism{
 
     @objc override func run() {
-        xcredsSetup()
         TCSLogWithMark("~~~~~~~~~~~~~~~~~~~ XCredsUserSetup mech starting ~~~~~~~~~~~~~~~~~~~")
 
+        let bundle = Bundle.findBundleWithName(name: "XCreds")
+        if let bundle = bundle {
+            let infoPlist = bundle.infoDictionary
+            if let infoPlist = infoPlist,
+                let build = infoPlist["CFBundleVersion"] as? String,
+                let version = infoPlist["CFBundleShortVersionString"] as? String {
+                TCSLogInfoWithMark("------------------------------------------------------------------")
+                TCSLogInfoWithMark("XCreds Login \(version).\(build)")
+                if DefaultsOverride.standardOverride.bool(forKey: "showDebug")==false {
+                    TCSLogInfoWithMark("Log showing only basic info and errors.")
+                    TCSLogInfoWithMark("Set debugLogging to true to show verbose logging with")
+                    TCSLogInfoWithMark("sudo defaults write /Library/Preferences/no.uio.math.xcreds showDebug -bool true")
+                }
+                else {
+                    TCSLogInfoWithMark("To disable verbose logging:")
+                    TCSLogInfoWithMark("sudo defaults delete /Library/Preferences/no.uio.math.xcreds showDebug")
+
+                }
+                TCSLogInfoWithMark("To see all logging options, go to https://twocanoes.com/knowledge-base/capturing-xcreds-logs/")
+
+
+                TCSLogInfoWithMark("------------------------------------------------------------------")
+            }
+        }
         TCSLogWithMark("checking to see if launchagent should be removed...")
         let fm = FileManager.default
-        let launchAgentPath = "/Library/LaunchAgents/com.twocanoes.xcreds-launchagent.plist"
+        let launchAgentPath = "/Library/LaunchAgents/no.uio.math.xcreds.launchagent.plist"
         let launchAgentExists = fm.fileExists(atPath: launchAgentPath)
         if DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldRemoveMenuItemAutoLaunch.rawValue)==true, launchAgentExists == true {
             do {
