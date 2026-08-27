@@ -109,7 +109,7 @@ class TokenManager:DSQueryable {
         }
 
         
-        let oidcLite = OIDCLite(discoveryURL: DefaultsOverride.standardOverride.string(forKey: PrefKeys.discoveryURL.rawValue) ?? "NONE", clientID: clientID ?? "NONE", clientSecret: clientSecret, redirectURI: DefaultsOverride.standardOverride.string(forKey: PrefKeys.redirectURI.rawValue), scopes: scopes, additionalParameters:additionalParameters.count==0 ? nil:additionalParameters, resource: resource,         debugLogging: DefaultsOverride.standardOverride.bool(forKey: "showDebug"))
+        let oidcLite = OIDCLite(discoveryURL: DefaultsOverride.standardOverride.string(forKey: PrefKeys.discoveryURL.rawValue) ?? "NONE", clientID: clientID ?? "NONE", clientSecret: clientSecret, redirectURI: DefaultsOverride.standardOverride.string(forKey: PrefKeys.redirectURI.rawValue), scopes: scopes, additionalParameters:additionalParameters.count==0 ? nil:additionalParameters, resource: resource)
         try await oidcLite.getEndpoints()
         oidcLocal = oidcLite
         return oidcLite

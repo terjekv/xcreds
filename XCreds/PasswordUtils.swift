@@ -51,7 +51,7 @@ struct CurrentConsoleUserInfo {
     let kerberosPrincipal: String?
 }
 
-class PasswordUtils: NSObject {
+class PasswordUtils: NSObject, DSQueryable {
 
     static let currentConsoleUserName: String = NSUserName()
     static let uid: String = String(getuid())

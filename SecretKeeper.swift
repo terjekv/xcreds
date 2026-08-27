@@ -462,6 +462,41 @@ public class SecretKeeper {
 
 }
 extension SecretKeeper {
+    @discardableResult
+    func deleteSecrets() -> Bool {
+        var success = true
+
+        do {
+            if FileManager.default.fileExists(atPath: secretsFileURL.path()) {
+                try FileManager.default.removeItem(at: secretsFileURL)
+            }
+        } catch {
+            TCSLogWithMark("Error deleting secrets file: \(error.localizedDescription)")
+            success = false
+        }
+
+        do {
+            let keychain = try systemKeychain()
+            let query: [String: Any] = [
+                kSecClass as String: kSecClassKey,
+                kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
+                kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+                kSecAttrApplicationTag as String: tag,
+                kSecUseKeychain as String: keychain
+            ]
+            let status = SecItemDelete(query as CFDictionary)
+            if status != errSecSuccess && status != errSecItemNotFound {
+                TCSLogWithMark("Error deleting private key: \(status)")
+                success = false
+            }
+        } catch {
+            TCSLogWithMark("Error opening system keychain: \(error.localizedDescription)")
+            success = false
+        }
+
+        return success
+    }
+
     func saveSecrets(_ secrets:Secrets) throws {
 
 

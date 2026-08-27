@@ -48,7 +48,7 @@ class XCredsUserSetup: XCredsBaseMechanism{
         }
 
         let secureTokenUsers = try? SecureToken().secureTokenUsers()
-        if let numberOfUsersWithoutSecureTokens = SecureToken().numberOfUsersWithSecureTokens(),
+        if let numberOfUsersWithoutSecureTokens = SecureToken().numberOfUsersWithoutSecureTokens(),
         DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldHideSecureTokenStatus.rawValue)==false,
            let secureTokenUsers = secureTokenUsers,
             secureTokenUsers.count>0{

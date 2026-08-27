@@ -40,7 +40,6 @@
 		760769C12D9120C1006A1F4E /* no.uio.math.xcreds.launchagent.plist in Resources */ = {isa = PBXBuildFile; fileRef = 760769C02D9120C1006A1F4E /* no.uio.math.xcreds.launchagent.plist */; };
 		760B6B732EE890FE000C7E9B /* FDESetupHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A35FD12EAC0DC400099940 /* FDESetupHelper.swift */; };
 		760D8D5A2EC5757B00252828 /* UserSecretManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76EAAFD92CEFED3800A5FEE3 /* UserSecretManager.swift */; };
-		760D8D5B2EC575A100252828 /* SecretKeeper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76EAAFD82CEFED3800A5FEE3 /* SecretKeeper.swift */; };
 		760D8D5C2EC5760E00252828 /* XCreds/UsernamePassword.swift in Sources */ = {isa = PBXBuildFile; fileRef = 766D67772E96249A009CE2BF /* XCreds/UsernamePassword.swift */; };
 		760D8D5D2EC5769B00252828 /* DataExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7632909B2876673500CF8857 /* DataExtension.swift */; };
 		760D8D5E2EC576B300252828 /* UNIXUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7657DED82B351B5B003A23DB /* UNIXUtilities.swift */; };
@@ -338,6 +337,7 @@
 		A10000000000000000000004 /* LegacyKeychainBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* LegacyKeychainBridge.m */; };
 		A10000000000000000000005 /* LegacyKeychainBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* LegacyKeychainBridge.m */; };
 		A10000000000000000000006 /* LegacyKeychainBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* LegacyKeychainBridge.m */; };
+		A10000000000000000000007 /* LegacyKeychainBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* LegacyKeychainBridge.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1560,7 +1560,6 @@
 				765348882E973B0F00FECD7C /* XCreds/TCSUnifiedLogger.m in Sources */,
 				760D8D5A2EC5757B00252828 /* UserSecretManager.swift in Sources */,
 				760D8D5C2EC5760E00252828 /* XCreds/UsernamePassword.swift in Sources */,
-				760D8D5B2EC575A100252828 /* SecretKeeper.swift in Sources */,
 				760D8D5D2EC5769B00252828 /* DataExtension.swift in Sources */,
 				760D8D5E2EC576B300252828 /* UNIXUtilities.swift in Sources */,
 				760B6B732EE890FE000C7E9B /* FDESetupHelper.swift in Sources */,
@@ -1691,6 +1690,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000007 /* LegacyKeychainBridge.m in Sources */,
 				764447232CF830CB00E6289E /* DefaultsOverride.swift in Sources */,
 				76DCF34D2F6D85DE003E25C1 /* FDESetupHelper.swift in Sources */,
 				76A52FDB2CF625EC00591252 /* Logger.swift in Sources */,
