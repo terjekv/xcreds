@@ -380,6 +380,7 @@ import Network
         switch loginWindowType {
         case .cloud:
             self.loginWindowType = LoginWindowType.cloud
+            self.mainLoginWindowController?.controlsViewController?.setLoginWindowType(isCloud: true)
             self.mainLoginWindowController?.controlsViewController?.refreshGridColumn?.isHidden=false
 
             if loginWebViewController==nil{
@@ -404,6 +405,7 @@ import Network
 
 
         case .usernamePassword:
+            self.mainLoginWindowController?.controlsViewController?.setLoginWindowType(isCloud: false)
             self.mainLoginWindowController?.controlsViewController?.refreshGridColumn?.isHidden=true
 
 //            NetworkMonitor.shared.stopMonitoring()

@@ -348,7 +348,9 @@ class TokenManager:DSQueryable {
         TCSLogWithMark("getting users")
         let nonSystemUsers = try? getAllNonSystemUsers()
         let existingUser = try? getUserRecord(sub: subValue, iss: issuerValue)
-        let shouldPromptForMigration = DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldPromptForMigration.rawValue)
+        let automaticMigrationPrompt = DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldPromptForMigration.rawValue)
+        let userRequestedMapping = LoginSessionOptions.shared.consumeAccountMappingRequest()
+        let shouldPromptForMigration = automaticMigrationPrompt || userRequestedMapping
 
         if shouldPromptForMigration == false {
             TCSLogWithMark("not prompting for migration")
@@ -361,7 +363,7 @@ class TokenManager:DSQueryable {
         }
         else if let nonSystemUsers = nonSystemUsers, nonSystemUsers.count>0, shouldPromptForMigration == true {
 
-            TCSLogWithMark("Preference set to prompt for migration and there are existing users, so prompting")
+            TCSLogWithMark("Account mapping requested and there are existing users, so prompting")
 
 
             return SelectLocalAccountWindowController.selectLocalAccountAndUpdate(newPassword: newPassword)

@@ -51,7 +51,9 @@ class LocalCheckAndMigrate : NSObject, DSQueryable {
                 user = foundRecord.recordName
             }
         }
-        let shouldPromptToMigrate = DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldPromptForMigration.rawValue)
+        let automaticMigrationPrompt = DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldPromptForMigration.rawValue)
+        let userRequestedMapping = LoginSessionOptions.shared.consumeAccountMappingRequest()
+        let shouldPromptToMigrate = automaticMigrationPrompt || userRequestedMapping
 
         // check local user pass to see if user exists
         

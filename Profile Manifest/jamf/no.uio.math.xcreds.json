@@ -1,6 +1,6 @@
 {
     "title": "XCreds (no.uio.math.xcreds)",
-    "description": "XCreds 5.9 (9148) OAuth Settings",
+    "description": "XCreds 5.9.2 (9150) OAuth Settings",
     "properties": {
         "ADDomain": {
             "type": "string",
@@ -870,9 +870,9 @@
         },
         "shouldShowConfigureWifiButton": {
             "type": "boolean",
-            "title": "Show Configure WiFi",
+            "title": "Show Configure Wi-Fi in Advanced Options",
             "default": true,
-            "description": "Show Configure WiFi button in XCreds Login.",
+            "description": "Show Configure Wi-Fi in the Advanced login options menu.",
             "links": [
                 {
                     "rel": "More information",
@@ -973,16 +973,31 @@
         },
         "shouldShowMacLoginButton": {
             "type": "boolean",
-            "title": "Show Mac Login Window button",
-            "default": true,
-            "description": "Show the Mac Login Window button in XCreds Login.",
-            "links": [
-                {
-                    "rel": "More information",
-                    "href": "https://twocanoes.com/knowledge-base/xcreds-admin-guide/#preferences"
-                }
-            ],
+            "title": "Show Direct Login Mode Button",
+            "default": false,
+            "description": "Show a direct button that switches between cloud and local login. The same action remains available under Advanced Login Options.",
             "property_order": 390
+        },
+        "shouldShowAdvancedLoginOptions": {
+            "type": "boolean",
+            "title": "Show Advanced Login Options",
+            "default": true,
+            "description": "Show an Advanced button containing the login mode switch and permitted account or recovery options.",
+            "property_order": 391
+        },
+        "shouldAllowUserAccountMapping": {
+            "type": "boolean",
+            "title": "Allow User-Requested Account Mapping",
+            "default": true,
+            "description": "Allow a user to request account mapping for the current sign-in from Advanced Login Options. The choice is never persisted.",
+            "property_order": 392
+        },
+        "shouldShowStandardMacOSLoginOption": {
+            "type": "boolean",
+            "title": "Show Standard macOS Login Option",
+            "default": false,
+            "description": "Show the recovery action that restores the standard macOS login window. This action may require a restart.",
+            "property_order": 393
         },
         "shouldShowLocalOnlyCheckbox": {
             "type": "boolean",
