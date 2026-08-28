@@ -6,5 +6,9 @@
 	<string>public.app-category.utilities</string>
 	<key>LogFileName</key>
 	<string>xcreds.log</string>
+	<key>XCredsDistribution</key>
+	<string>math.uio.no</string>
+	<key>XCredsUpstreamVersion</key>
+	<string>5.9 (9148)</string>
 </dict>
 </plist>

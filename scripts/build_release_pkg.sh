@@ -67,7 +67,7 @@ fi
 version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "${exported_app}/Contents/Info.plist")"
 build_number="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "${exported_app}/Contents/Info.plist")"
 package_version="${version}.${build_number}"
-artifact_name="XCreds_Build-${build_number}_Version-${version}.pkg"
+artifact_name="XCreds_Build-${build_number}_Version-${version}-math-uio.pkg"
 final_package="${output_dir}/${artifact_name}"
 
 if [ -e "${final_package}" ]; then

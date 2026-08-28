@@ -61,7 +61,7 @@ The native release workflow archives and exports a Developer ID-signed universal
 ./scripts/build_release_pkg.sh
 ```
 
-The output is `build/ReleaseArtifacts/XCreds_Build-<build>_Version-<version>.pkg`. The script refuses to overwrite an existing artifact. It accepts these optional environment variables:
+The output is `build/ReleaseArtifacts/XCreds_Build-<build>_Version-<version>-math-uio.pkg`. The suffix and the `math.uio.no` distribution marker in the app's Info.plist distinguish this derivative from an upstream Two Canoes release. The script refuses to overwrite an existing artifact. It accepts these optional environment variables:
 
 - `NOTARY_PROFILE`: a `notarytool` keychain profile. When omitted, the package is signed but not notarized.
 - `OUTPUT_DIR` and `WORK_DIR`: alternate artifact and temporary-work directories.
