@@ -16,7 +16,7 @@ struct xcreds:ParsableCommand {
 
     static var configuration = CommandConfiguration(
         abstract: "Command line interface for XCreds.",
-        subcommands: [Status.self,ImportRFIDUsers.self, ShowTemplate.self,SetRFIDUser.self, ShowRFIDUser.self,ShowRFIDUsers.self, RemoveRFIDUser.self,SetAdminUser.self,ShowAdminUser.self, ClearAdminUser.self,ClearRFIDUsers.self, ListReaders.self,RFIDListener.self, RunApp.self],
+        subcommands: [Status.self,ImportRFIDUsers.self, ShowTemplate.self,SetRFIDUser.self, ShowRFIDUser.self,ShowRFIDUsers.self, RemoveRFIDUser.self,SetAdminUser.self,ShowAdminUser.self, ClearAdminUser.self,ClearRFIDUsers.self, ListReaders.self,RFIDListener.self, ClearSecrets.self, RunApp.self],
         defaultSubcommand: RunApp.self)
 
 }
@@ -247,6 +247,9 @@ extension xcreds {
 
             let watcher = TKTokenWatcher()
             watcher.setInsertionHandler({ tokenID in
+                if tokenID.contains("xcredstap") == false {
+                    return
+                }
                 print("card inserted")
 
                 watcher.addRemovalHandler({ tokenID in
@@ -423,6 +426,28 @@ extension xcreds {
 }
 @available(macOS, deprecated: 11)
 extension xcreds {
+    struct ClearSecrets:ParsableCommand {
+        static var configuration = CommandConfiguration(abstract: "Clear all secrets and the private key from the system keychain.")
+
+        func run() throws {
+            TCSUnifiedLogger.shared().suppressDebug=true
+
+            if geteuid() != 0  {
+                print("This operation requires root. Please run with sudo.")
+                NSApplication.shared.terminate(self)
+
+            }
+            let secretKeeper = try SecretKeeper(label: "XCreds Encryptor", tag: "XCreds Encryptor")
+            if secretKeeper.deleteSecrets()==false {
+                print("Error deleting secrets. Please manually remove the private key \"XCreds Encryptor\" from the keychain and the /usr/local/var/twocanoes/secrets.bin file.")
+                
+            }
+            
+        }
+    }
+}
+@available(macOS, deprecated: 11)
+extension xcreds:DSQueryable {
     struct SetAdminUser:ParsableCommand {
         static var configuration = CommandConfiguration(abstract: "Set the current admin user used for resetting keychain.")
 
@@ -438,10 +463,42 @@ extension xcreds {
                 print("This operation requires root. Please run with sudo.")
                 NSApplication.shared.terminate(self)
             }
+            do {
+                let secretKeeper = try SecretKeeper(label: "XCreds Encryptor", tag: "XCreds Encryptor")
+                let userManager = UserSecretManager(secretKeeper: secretKeeper)
+                let verificationResults = PasswordUtils.isLocalPasswordValid(userName: adminusername, userPass: adminpassword)
+                
+                switch verificationResults {
+                    
+                case .success:
+                    break
+                case .incorrectPassword:
+                    print("incorrect password")
+                    return
+                case .accountDoesNotExist:
+                    print("account does not exist")
+                    return
+                case .accountLocked:
+                    print("account locked")
+                    return
+                case .other(let msg):
+                    print(msg)
+                    return
+                    
+                }
+                
+                
+                if PasswordUtils().isAdminUser(username: adminusername) == false {
+                    print("user is not an admin user!")
+                    return
 
-            let secretKeeper = try SecretKeeper(label: "XCreds Encryptor", tag: "XCreds Encryptor")
-            let userManager = UserSecretManager(secretKeeper: secretKeeper)
-            try userManager.updateLocalAdminCredentials(user: SecretKeeperUser(fullName: "", username: adminusername, password: adminpassword, uid: NSNumber(value: -1), rfidUID: Data(), pin: nil))
+                }
+                try userManager.updateLocalAdminCredentials(user: SecretKeeperUser(fullName: "", username: adminusername, password: adminpassword, uid: NSNumber(value: -1), rfidUID: Data(), pin: nil))
+            }
+            catch {
+                print("Error setting admin credentials: \(error)")
+
+            }
         }
 
     }
@@ -774,7 +831,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, DSQueryable {
         shareMounterMenu?.updateShares(connected: true)
         shareMenu = shareMounterMenu?.buildMenu(connected: true)
 
+
+        
         if let sharesMenuItem = statusMenu.item(withTag: StatusMenuController.StatusMenuItemType.SharesMenuItem.rawValue) {
+
+            if let shareMenuItemTitle = DefaultsOverride.standardOverride.value(forKey: PrefKeys.shareMenuItemName.rawValue) as? String {
+                sharesMenuItem.title = shareMenuItemTitle
+            }
 
             if shareMenu?.items.count==0{
                 sharesMenuItem.isHidden=true
@@ -850,7 +913,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DSQueryable {
     }
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         NetworkMonitor.shared.startMonitoring()
-        
+
         updatePrefsFromDS()
         self.statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusBarItem?.isVisible=true

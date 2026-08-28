@@ -12,7 +12,7 @@ class FileVaultLoginHelper {
     
     static let shared = FileVaultLoginHelper()
 
-    
+    @available(macOS, deprecated: 10.10)
     func skipFileVaultAuthAtNextReboot(completion:@escaping(_ result:Bool, _ error:String?)->Void)   {
         let helperToolManager = HelperToolManager()
 
@@ -115,5 +115,6 @@ class FileVaultLoginHelper {
 
       
     }
+    
     
 }

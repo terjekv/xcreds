@@ -7,10 +7,46 @@
 
 import Foundation
 import OSLog
+
+/// Options selected at the login window that must not persist beyond the
+/// current SecurityAgent process. In particular, account mapping is an
+/// explicit choice for one sign-in rather than a machine-wide user default.
+final class LoginSessionOptions {
+    static let shared = LoginSessionOptions()
+
+    private let lock = NSLock()
+    private var accountMappingRequested = false
+
+    private init() {}
+
+    var isAccountMappingRequested: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return accountMappingRequested
+    }
+
+    func setAccountMappingRequested(_ requested: Bool) {
+        lock.lock()
+        accountMappingRequested = requested
+        lock.unlock()
+    }
+
+    /// Returns and clears the request once authenticated account resolution
+    /// reaches the point where migration could be offered.
+    func consumeAccountMappingRequest() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        let requested = accountMappingRequested
+        accountMappingRequested = false
+        return requested
+    }
+}
+
 enum PrefKeys: String {
-    case clientID, clientSecret, ropgResponseValue, resource, password="xcreds local password",discoveryURL, redirectURI, scopes, accessToken, idToken, refreshToken, tokenEndpoint, expirationDate, invalidToken, refreshRateHours,refreshRateMinutes, showDebug, verifyPassword, shouldShowQuitMenu, shouldShowPreferencesOnStart, shouldSetGoogleAccessTypeToOffline, shouldSetGoogleHDParam,passwordChangeURL, shouldUseADNativePasswordChangeMenuItem, shouldShowAboutMenu, username, idpHostName, passwordElementID, shouldFindPasswordElement, shouldShowSupportStatus,shouldShowConfigureWifiButton,shouldShowMacLoginButton, loginWindowBackgroundImageURL, loginWindowSecondaryMonitorsBackgroundImageURL, loginWindowBackgroundImageAlpha, loginWindowSecondaryMonitorsBackgroundAlpha, shouldShowCloudLoginByDefault, shouldPreferLocalLoginInsteadOfCloudLogin, idpHostNames,autoRefreshLoginTimer, loginWindowWidth, loginWindowHeight, shouldShowRefreshBanner, shouldSwitchToLoginWindowWhenLocked,accounts = "Accounts",
+    case clientID, clientSecret, ropgResponseValue, resource, password="xcreds local password",discoveryURL, redirectURI, scopes, accessToken, idToken, refreshToken, tokenEndpoint, expirationDate, invalidToken, refreshRateHours,refreshRateMinutes, showDebug, verifyPassword, shouldShowQuitMenu, shouldShowPreferencesOnStart, shouldSetGoogleAccessTypeToOffline, googleHostDomain,passwordChangeURL, shouldUseADNativePasswordChangeMenuItem, shouldShowAboutMenu, username, idpHostName, passwordElementID, shouldFindPasswordElement, shouldShowSupportStatus,shouldShowConfigureWifiButton,shouldShowMacLoginButton, shouldShowAdvancedLoginOptions, shouldAllowUserAccountMapping, shouldShowStandardMacOSLoginOption, loginWindowBackgroundImageURL, loginWindowSecondaryMonitorsBackgroundImageURL, loginWindowBackgroundImageAlpha, loginWindowSecondaryMonitorsBackgroundAlpha, shouldShowCloudLoginByDefault, shouldPreferLocalLoginInsteadOfCloudLogin, idpHostNames,autoRefreshLoginTimer, loginWindowWidth, loginWindowHeight, shouldShowRefreshBanner, shouldSwitchToLoginWindowWhenLocked,accounts = "Accounts",
          windowSignIn = "WindowSignIn", settingsOverrideScriptPath, localAdminUserName, localAdminPassword, usernamePlaceholder, passwordPlaceholder, shouldShowLocalOnlyCheckbox, shouldShowTokenUpdateStatus, shouldDetectNetworkToDetermineLoginWindow, showLoginWindowDelaySeconds, shouldPromptForMigration, shouldAllowKeyComboForMacLoginWindow, aliasName,claimsToAddToLocalUserAccount, loadPageTitle, loadPageInfo,shouldPromptForADPasswordChange, hideIfPathExists, allowedUsersArray, allowUsersClaim, mapKerberosPrincipalName, shouldUpdateKerberosUserPrincipalADDomain, mapFirstName = "map_firstname",mapFullName = "map_fullname", mapUserName = "map_username", mapLastName = "map_lastname",menuItemWindowBackgroundImageURL, menuItemWindowBackgroundImageAlpha, menuItems, shareMenuItemName, shouldShowSignInMenuItem, shouldLoginWindowBackgroundImageFillScreen,
-    shouldLoginWindowSecondaryMonitorsBackgroundImageFillScreen,resetPasswordDialogTitle, systemInfoButtonTitle, shouldShowShutdownButton, shouldShowRestartButton, shouldShowSystemInfoButton, shouldShowMenuBarSignInWithoutLoginWindowSignin, refreshBannerText,adUserAttributesToAddToLocalUserAccount, mapUID = "map_uid", allowLoginIfMemberOfGroup, keyCodeForLoginWindowChange, mapPasswordExpiry = "map_password_expiry", menuItemIconData, menuItemIconCheckedData, mapFullUserName = "map_fullusername", ccidSlotName, shouldSuppressLocalPasswordPrompt,shouldUseKillWhenLoginWindowSwitching, upnSuffixToDomainMappings,shouldAllowLoginCardSetup,accountLockedPasswordDialogTitle,accountLockedPasswordDialogText, OIDCLastLoginTimestamp, lastOIDCLoginFailTimestamp,loginWindowLogoPath, shouldHideLoginWindowLogo, shouldRemoveMenuItemAutoLaunch,primaryGroupID, skipUserSetupBuddy, shouldSkipFileVaultLogin, shouldSkipFileVaultLoginAdmin
+    shouldLoginWindowSecondaryMonitorsBackgroundImageFillScreen,resetPasswordDialogTitle, systemInfoButtonTitle, shouldShowShutdownButton, shouldShowRestartButton, shouldShowSystemInfoButton, shouldShowMenuBarSignInWithoutLoginWindowSignin, refreshBannerText,adUserAttributesToAddToLocalUserAccount, mapUID = "map_uid", allowLoginIfMemberOfGroup, keyCodeForLoginWindowChange, mapPasswordExpiry = "map_password_expiry", menuItemIconData, menuItemIconCheckedData, mapFullUserName = "map_fullusername", ccidSlotName, shouldSuppressLocalPasswordPrompt,shouldUseKillWhenLoginWindowSwitching, upnSuffixToDomainMappings,shouldAllowLoginCardSetup,accountLockedPasswordDialogTitle,accountLockedPasswordDialogText, OIDCLastLoginTimestamp, lastOIDCLoginFailTimestamp,loginWindowLogoPath, shouldHideLoginWindowLogo, shouldRemoveMenuItemAutoLaunch,primaryGroupID, skipUserSetupBuddy, shouldSkipFileVaultLogin, shouldSkipFileVaultLoginAdmin, shouldUseBasicAuth, shouldSkipSettingSecureTokenForAdmin,
+    shouldHideSecureTokenStatus, shouldAllowEmptyLocalPassword
     case shouldUseROPGForPasswordChangeChecking
     case shouldUseLDAPForPasswordChangeChecking
     case shouldUseROPGForMenuLogin
@@ -350,4 +386,3 @@ enum Preferences: String {
     case PasswordOverwriteOptional // allow the user to stomp on the password if interested
 
 }
-

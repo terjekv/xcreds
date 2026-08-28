@@ -16,6 +16,7 @@ class StateFileHelper {
         case returnType
         case delayType
         case fileVaultLogin
+        case secureTokenAttempted
     }
 
     func paths(_ fileType:StateFileType) -> (folderPath:String, filePath:String){
@@ -32,6 +33,10 @@ class StateFileHelper {
         case .fileVaultLogin:
             folderPath = "/Library/Application Support/XCreds/statefile/"
             filePath = "xcreds_filevaultlogin"
+        case .secureTokenAttempted:
+            folderPath = "/private/tmp/"
+            filePath = "xcreds_secureTokenAttempted"
+
         }
         return (folderPath, filePath)
     }
@@ -65,7 +70,13 @@ class StateFileHelper {
         let (folderPath, filePath) = paths(fileType)
 
         let fullPath = folderPath + filePath
-        return FileManager.default.fileExists(atPath: fullPath)
+        TCSLogWithMark("path to check is \(fullPath)")
+        let exists = FileManager.default.fileExists(atPath: fullPath)
+        
+        if exists == true {
+            TCSLogWithMark("\(fullPath) exists")
+        }
+        return exists
     }
     func removeFile(_ fileType:StateFileType) throws {
         TCSLogWithMark()

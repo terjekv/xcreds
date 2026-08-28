@@ -12,6 +12,7 @@ class SelectLocalAccountWindowController: NSWindowController, NSWindowDelegate {
     @IBOutlet weak private var usernameTextField: NSTextField!
     @IBOutlet weak private var passwordTextField: NSSecureTextField!
     @IBOutlet weak private var createNewAccountButton: NSButton!
+    @IBOutlet weak private var validationMessageTextField: NSTextField!
 
     var username:String?
     var password:String?
@@ -37,10 +38,10 @@ class SelectLocalAccountWindowController: NSWindowController, NSWindowDelegate {
             }
 
             let response = NSApp.runModal(for: verifyLocalCredentialsWindowController.window!)
-            verifyLocalCredentialsWindowController.window?.close()
             if response == .cancel {
                 isDone=true
                 TCSLogWithMark("User cancelled. Denying login")
+                verifyLocalCredentialsWindowController.window?.close()
 //                mechanism.denyLogin(message:nil)
                 return .canceled
 
@@ -52,6 +53,7 @@ class SelectLocalAccountWindowController: NSWindowController, NSWindowDelegate {
 
             guard let localUsername = localUsername, let localPassword = localPassword, let shouldCreateNewAccount = shouldCreateNewAccount else {
                 TCSLogWithMark("local username, password or shouldCreateNewAccount not set")
+                verifyLocalCredentialsWindowController.window?.close()
 //                mechanism.denyLogin(message:nil)
                 return .canceled
             }
@@ -65,6 +67,7 @@ class SelectLocalAccountWindowController: NSWindowController, NSWindowDelegate {
 
                         isDone = true
                         TCSLogErrorWithMark("localUser is not set")
+                        verifyLocalCredentialsWindowController.window?.close()
                         return .error("local user not set")
 
                     }
@@ -73,30 +76,37 @@ class SelectLocalAccountWindowController: NSWindowController, NSWindowDelegate {
                         if localPassword == newPassword {
                             TCSLogWithMark("cloud password is already the local password.")
 
+                            verifyLocalCredentialsWindowController.window?.close()
                             return .successful(localUsername)
                         }
                         try localUser.changePassword(localPassword, toPassword: newPassword)
 
                         TCSLogWithMark("local password set successfully to network / cloud password")
+                        verifyLocalCredentialsWindowController.window?.close()
                         return .successful(localUsername)
 
                     }
                     catch {
                         TCSLogErrorWithMark("Error setting local password to cloud password")
+                        verifyLocalCredentialsWindowController.window?.close()
                         return .error("Error setting local password to cloud password")
                     }
 
                 case .accountLocked:
                     TCSLogErrorWithMark("Account Locked")
+                    verifyLocalCredentialsWindowController.showValidationError("That local account is locked.")
                 case .incorrectPassword: //don't return b/c we just loop and ask again
                     TCSLogErrorWithMark("Incorrect Password")
+                    verifyLocalCredentialsWindowController.showValidationError("The local username or password is incorrect.")
 
                 case .accountDoesNotExist:
                     TCSLogErrorWithMark("Account \(localUsername) does not exist")
+                    verifyLocalCredentialsWindowController.showValidationError("No local account with that username was found.")
 
                 case .other(let err):
                     isDone = true
                     TCSLogErrorWithMark("Other err: \(err)")
+                    verifyLocalCredentialsWindowController.window?.close()
                     return .error(err)
 
 
@@ -104,6 +114,7 @@ class SelectLocalAccountWindowController: NSWindowController, NSWindowDelegate {
             }
             else {
                 isDone = true
+                verifyLocalCredentialsWindowController.window?.close()
                 return .createNewAccount
             }
         }
@@ -111,11 +122,20 @@ class SelectLocalAccountWindowController: NSWindowController, NSWindowDelegate {
     }
     override func windowDidLoad() {
         super.windowDidLoad()
+        validationMessageTextField.stringValue = ""
         if let shouldShowCreateNewAccountButton = shouldShowCreateNewAccountButton{
             createNewAccountButton.isHidden = !shouldShowCreateNewAccountButton
         }
 
     }
+
+    private func showValidationError(_ message: String) {
+        validationMessageTextField.stringValue = message
+        passwordTextField.stringValue = ""
+        window?.shake(self)
+        window?.makeFirstResponder(passwordTextField)
+    }
+
     func windowDidBecomeKey(_ notification: Notification) {
         if let shouldShowCreateNewAccountButton = shouldShowCreateNewAccountButton{
             createNewAccountButton.isHidden = !shouldShowCreateNewAccountButton

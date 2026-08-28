@@ -1,3 +1,248 @@
+## tag-5.9(9147) (2026-04-01)
+
+*  fixed default load page and google hd domain issue [View](https://github.com/twocanoes/xcreds/commit/63282842fa59497180ae6b3ec2d0a62f29cb9fd2)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/561bbae76cbe2ea80ab9e87d841ce0ead7e4cd84)
+
+
+## tag-5.9(9146) (2026-03-30)
+
+*  Implement "hd" URI parameter for Google OpenID connection #380 [View](https://github.com/twocanoes/xcreds/commit/d756a70321f35941898015865f98ffa04a16cae3)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/56fd00138cd80464fe71b78c148db0c398cf1ab9)
+
+
+## tag-5.9(9145) (2026-03-26)
+
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/ce307250657e9379eaaba6de70f9d78ea7c8c386)
+
+
+## tag-5.9(9144) (2026-03-25)
+
+*  updated manifest [View](https://github.com/twocanoes/xcreds/commit/1a2d3afb9538cb0df94592481e71623b53e4ee8b)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/13f4284e9f3f2eeed4b5b79c986dd714bac4da41)
+
+
+## tag-5.9(9143) (2026-03-24)
+
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/9ee1e8492b83056f36e4180bfce072821555d865)
+
+
+## tag-5.9(9142) (2026-03-24)
+
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/ea0591e6b2183646e46aa3cd8aeee160e23afb7e)
+
+
+## tag-5.9(9141) (2026-03-24)
+
+*  fixed manifest and fixed google hd hint [View](https://github.com/twocanoes/xcreds/commit/0ebb0b30cabb22970a124a8ea4469a08b16bd576)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/3b58ac3b0eaaa1a473ac64a109db38e8c989d8d9)
+
+
+## tag-5.9(9140) (2026-03-24)
+
+*  reverted change to okta.com suffix [View](https://github.com/twocanoes/xcreds/commit/51d1b9dc2e6f59af9d1c7dc2c97ffe98e71a56d3)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/12be1a4f3492bf8086e1fff4b8625c0ebaed22e3)
+
+
+## tag-5.9(9139) (2026-03-24)
+
+*  updated log messages [View](https://github.com/twocanoes/xcreds/commit/fb9c2807c09489b2b1b4a6783969ec1b68d09983)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/e79aa56393bf4c390cc3f186b94a7b2f0ac5aacd)
+
+
+## tag-5.9(9138) (2026-03-24)
+
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/8290a1893ef09197c3acac026887790767830bf2)
+
+
+## tag-5.9(9137) (2026-03-24)
+
+*  added clear secrets command [View](https://github.com/twocanoes/xcreds/commit/b246b1611adb979aa7da179a981514c3519c2fda)
+*  added more logging options and ability to remove db in secretskeeper [View](https://github.com/twocanoes/xcreds/commit/9f79e2ba496f96f9f453d3b8431274db071e579e)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/623e3650f32a01d2f1bfdc4e8fbb182444b5311c)
+
+
+## tag-5.9(9131) (2026-03-23)
+
+*  added in more logging to OIDCLite [View](https://github.com/twocanoes/xcreds/commit/db1e32d16ecb8b3308ec9fb46cbec5bfa2e6deba)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/c03332176720d30d66c4bb0cea348c507fe10f53)
+
+
+## tag-5.9(9130) (2026-03-23)
+
+*  updated scheme [View](https://github.com/twocanoes/xcreds/commit/67e05e780963a1e90fced6eb3e04e4142f5a7428)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/fb1387319c3fb25152553996b05e04e2d0faa5b8)
+
+
+## tag-5.9(9129) (2026-03-20)
+
+*  added updated load page [View](https://github.com/twocanoes/xcreds/commit/cdbac64764461c840cda1bdea482f515d52d031c)
+*  PasswordOverwriteSilent not working using set-admin-username/password #337 [View](https://github.com/twocanoes/xcreds/commit/61f1fc1a6ecb4eecabde27b3f867beeb1b3f2eef)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/a1641a7bd5c848a128b4624431352fe4d8668ece)
+
+
+## tag-5.9(9126) (2026-03-20)
+
+*  fixed missing control bar #375 [View](https://github.com/twocanoes/xcreds/commit/83aa6b06389fc7732e3acad48e22940ebb64832e)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/38b3fffe56363187dfef432de2b0204cf9911791)
+
+
+## tag-5.9(9110) (2026-03-20)
+
+*  added trust for overlay [View](https://github.com/twocanoes/xcreds/commit/3018aa50ef6e7932e15feef9ed03797b1fcbcbe5)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/e83077d8e6afbc122ddbe604104a5e6dc8238aa3)
+
+
+## tag-5.9(9109) (2026-03-20)
+
+*  shouldSkipFileVaultLoginAdmin #375 [View](https://github.com/twocanoes/xcreds/commit/0439525c1911fc4b1578ad71add7503845f75333)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/5db49d2b0a17fd98f739b33f4524ef5ba75f4e74)
+
+
+## tag-5.9(9108) (2026-03-19)
+
+*  Issue with reading smart card values #369 [View](https://github.com/twocanoes/xcreds/commit/b868d81df8bcd3aeb4d9f41f5b176cd2fda1db1e)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/5a06ccfa8566291e86ec338c293a2b5088a9b4cc)
+
+
+## tag-5.9(9107) (2026-03-18)
+
+*  Implement "hd" URI parameter for Google OpenID connection #380 [View](https://github.com/twocanoes/xcreds/commit/8062ed4850f8501f8ba4c8706e94695b1e0ebfeb)
+*  Set Shares in Override Script #373 [View](https://github.com/twocanoes/xcreds/commit/51188290253a6694957b86402a3e39e7653ee76c)
+*  Add feature to verify credentials for set-admin-user #372 [View](https://github.com/twocanoes/xcreds/commit/18a4157eaa2d64b554a89b382e62347ca7f168d0)
+*  FileVault Unlock preferences need pfm_app_min #367 [View](https://github.com/twocanoes/xcreds/commit/a8e369326cb2b024e9c9f7fdc843a16cf21389e0)
+*  shareMenuItemName does not change text #338 [View](https://github.com/twocanoes/xcreds/commit/6b85257b59dc61d7cab3d86963d0d59068c34162)
+*  PasswordOverwriteSilent not working using set-admin-username/password #337 [View](https://github.com/twocanoes/xcreds/commit/030b9052100fa4b886a856f4283712e310dbe0a3)
+*  Menubar sign-in window can sometime display multiple overlapping UI elements #339 [View](https://github.com/twocanoes/xcreds/commit/577e458b254878dd84ebc1b98962746548405d42)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/ee921d0f96525bc970568318285f2374e18dd38d)
+
+
+## tag-5.9(9106) (2026-03-05)
+
+*  added additional logging [View](https://github.com/twocanoes/xcreds/commit/34206761e146f3862a5abe379fec9834d4ad7232)
+*  fixed issue with AD and force overwrite [View](https://github.com/twocanoes/xcreds/commit/d87a02d4f85ce6433d9e5e1de9920ebf7ca3f927)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/45ba574f9073a56efc9d3e2503c8324068a879fc)
+
+
+## tag-5.9(9105) (2026-03-03)
+
+*  Add check for allowing empty local password [View](https://github.com/twocanoes/xcreds/commit/0cf7fe876722c4eda2e14c34a726944eb62360e7)
+*  Add "Allow Empty Local Password" key [View](https://github.com/twocanoes/xcreds/commit/bfeeefea4d63210a40ab08490d8a4dfc52693340)
+*  Add "Allow Empty Local Password" Key [View](https://github.com/twocanoes/xcreds/commit/c2e8fc9d7f8be3cea9b342a35d62fc2bb216ac64)
+*  updated pref name and added pref [View](https://github.com/twocanoes/xcreds/commit/c1cfe2399d852ea114cbbff3b6cf8c66ad25697f)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/744330ef81cc585c37440c1a529d4f2925e9611d)
+
+
+## tag-5.9(9104) (2026-02-20)
+
+*  bump [View](https://github.com/twocanoes/xcreds/commit/ed8cbaf7d4eea87d07f82d1e9ca7b57f9f1533b8)
+*  psso [View](https://github.com/twocanoes/xcreds/commit/4c623846c554ec1bc162dff9c30f5c244f0a24e3)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/06be38ca18684f6a520823962670237da945685e)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/da2164cfb2df5b6d780ba1563b98edbf981a203b)
+*  tweaked build scripts [View](https://github.com/twocanoes/xcreds/commit/583d3ed232d68cb7bba800700bd1f3dc5492e755)
+*  updated registration [View](https://github.com/twocanoes/xcreds/commit/29b10c9b68f59163a15272da59231130a1c702a5)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/2373f2be3f32a6443fde992b924e268aa3fc0041)
+*  put prefs inside ssoe profile [View](https://github.com/twocanoes/xcreds/commit/0ec915719754058c2194e16daf935939a5fc192c)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/eb3d13aea80b26e959ea523c1ab7f772b35ca1fc)
+*  fixed bundle id issue [View](https://github.com/twocanoes/xcreds/commit/c795619f0c6cbda6e0d892f0a5fb4a41f35f612b)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/6bdcf6ef51764814eefe4e75ebd4d10f76fc9d7c)
+*  wip [View](https://github.com/twocanoes/xcreds/commit/624cd997a65226338adddedec9820a4ec891bfea)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/4bc9866393c54b58dc5f8c7b6861b9a32f42bca0)
+*  wip [View](https://github.com/twocanoes/xcreds/commit/1ceb6053a2d309828543d60c037b775257816d10)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/f41fe1e803b3f023a4d440b6cf1a32fc6c8b27e4)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/3392696e7148bdcc8962636c74360799afdeeb51)
+*  fixed crash when dragging [View](https://github.com/twocanoes/xcreds/commit/b23f569ab769a07e1f9c757d4e1351266b37a3d0)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/753d4ed9d08379e5169196dc759e4afd5292446b)
+
+
+## tag-5.9(9123) (2026-02-02)
+
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/3392696e7148bdcc8962636c74360799afdeeb51)
+
+
+## tag-5.9(9122) (2026-02-02)
+
+*  wip [View](https://github.com/twocanoes/xcreds/commit/1ceb6053a2d309828543d60c037b775257816d10)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/f41fe1e803b3f023a4d440b6cf1a32fc6c8b27e4)
+
+
+## tag-5.9(9121) (2026-02-02)
+
+*  wip [View](https://github.com/twocanoes/xcreds/commit/624cd997a65226338adddedec9820a4ec891bfea)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/4bc9866393c54b58dc5f8c7b6861b9a32f42bca0)
+
+
+## tag-5.9(9120) (2026-02-02)
+
+*  fixed bundle id issue [View](https://github.com/twocanoes/xcreds/commit/c795619f0c6cbda6e0d892f0a5fb4a41f35f612b)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/6bdcf6ef51764814eefe4e75ebd4d10f76fc9d7c)
+
+
+## tag-5.9(9119) (2026-02-01)
+
+*  put prefs inside ssoe profile [View](https://github.com/twocanoes/xcreds/commit/0ec915719754058c2194e16daf935939a5fc192c)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/eb3d13aea80b26e959ea523c1ab7f772b35ca1fc)
+
+
+## tag-5.9(9118) (2026-02-01)
+
+*  tweaked build scripts [View](https://github.com/twocanoes/xcreds/commit/583d3ed232d68cb7bba800700bd1f3dc5492e755)
+*  updated registration [View](https://github.com/twocanoes/xcreds/commit/29b10c9b68f59163a15272da59231130a1c702a5)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/2373f2be3f32a6443fde992b924e268aa3fc0041)
+
+
+## tag-5.9(9112) (2026-02-01)
+
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/da2164cfb2df5b6d780ba1563b98edbf981a203b)
+
+
+## tag-5.9(9111) (2026-02-01)
+
+*  bump [View](https://github.com/twocanoes/xcreds/commit/ed8cbaf7d4eea87d07f82d1e9ca7b57f9f1533b8)
+*  psso [View](https://github.com/twocanoes/xcreds/commit/4c623846c554ec1bc162dff9c30f5c244f0a24e3)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/06be38ca18684f6a520823962670237da945685e)
+
+
+## tag-5.9(9101) (2026-01-28)
+
+*  added in status of secure token [View](https://github.com/twocanoes/xcreds/commit/cb3aef3f1e834f89bc8e1dd646d214662d9a90ff)
+*  updated oss tools [View](https://github.com/twocanoes/xcreds/commit/193a09d85c5088435c4e30ad7602c88f4df3a907)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/80516f27ab829a323d0b9bc81a5aae03aa374c56)
+
+
+## tag-5.9(9088) (2026-01-28)
+
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/7a50cd6716f85ad4bcdd6be83455eaedc5b0fa9d)
+
+
+## tag-5.9(9087) (2026-01-28)
+
+*  added shouldSetAdminSecureToken [View](https://github.com/twocanoes/xcreds/commit/798bbaa4bde5e406ebffc2bdfab218f929de5563)
+*  added ability give local admin specified in xcreds a secure token [View](https://github.com/twocanoes/xcreds/commit/013649544d69655e00a205ac440f31ceb63f39cf)
+*  updated OSS tools and added sample config for onelogin [View](https://github.com/twocanoes/xcreds/commit/5ca9c966bcc5f74276604b7768c4e01d23634441)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/f3ab2e10d1e123dad3b416acef6589ca4219699e)
+
+
+## tag-5.9(9061) (2026-01-12)
+
+*  test with basic token [View](https://github.com/twocanoes/xcreds/commit/1c2aaaa459daa02287e0d03616f2cc230cb97965)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/34c959e5a29af08964a1d2484d2ac385f5baefce)
+
+
+## tag-5.9(9060) (2026-01-12)
+
+*  add error checking from oidclite [View](https://github.com/twocanoes/xcreds/commit/2a982b320d50ca8de4c4d9019ad5b54bc0dadd60)
+*  bumped to 5.9 [View](https://github.com/twocanoes/xcreds/commit/41a4a4b847f531f3d95bb503ae4382cc5126a39f)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/30e3f4d14051c313a54280fcf09a5b6e125c0738)
+
+
+## tag-5.8(9059) (2026-01-08)
+
+*  wip [View](https://github.com/twocanoes/xcreds/commit/fe405264c1c511ec622f006e1d375ffe6dbb03b7)
+*  Fixed typo [View](https://github.com/twocanoes/xcreds/commit/0524215913edef3e67295f9f0e1aac647fa9972d)
+*  added more logging [View](https://github.com/twocanoes/xcreds/commit/ec624156733cb4d97c0b3afe4125286671b2e125)
+*  updated build number, manifest and other build files [View](https://github.com/twocanoes/xcreds/commit/81a1e16ad2bcbee81cd4a081996394e2347a8b45)
+
+
 ## tag-5.8(9058) (2025-12-09)
 
 *  added error message for fv not skipped [View](https://github.com/twocanoes/xcreds/commit/e99aae77f256b73568ab63b1feb6d96d366efcbb)

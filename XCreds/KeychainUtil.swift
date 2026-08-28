@@ -99,6 +99,7 @@ class KeychainUtil {
         TCSLogWithMark("\(serviceName) found in keychain")
         return PasswordItem(username: account, password: password)
     }
+    @available(macOS, deprecated: 10.10)
 
     func trustedApps() -> [SecTrustedApplication] {
         let paths = [
@@ -120,6 +121,7 @@ class KeychainUtil {
     }
 
     // set the password
+    @available(macOS, deprecated: 10.10)
 
     func setPassword(serviceName:String, accountName: String, pass: String, keychainPassword:String, keychain:SecKeychain?=nil) -> SecKeychainItem? {
         
@@ -314,6 +316,7 @@ class KeychainUtil {
 
 
     }
+    @available(macOS, deprecated: 10.10)
 
     func updatePassword(serviceName: String, accountName: String, pass: String, keychainPassword: String, keychain: SecKeychain? = nil) -> Bool {
         guard let passwordData = pass.data(using: .utf8) else {

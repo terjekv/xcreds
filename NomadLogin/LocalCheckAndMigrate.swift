@@ -51,7 +51,9 @@ class LocalCheckAndMigrate : NSObject, DSQueryable {
                 user = foundRecord.recordName
             }
         }
-        let shouldPromptToMigrate = DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldPromptForMigration.rawValue)
+        let automaticMigrationPrompt = DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldPromptForMigration.rawValue)
+        let userRequestedMapping = LoginSessionOptions.shared.consumeAccountMappingRequest()
+        let shouldPromptToMigrate = automaticMigrationPrompt || userRequestedMapping
 
         // check local user pass to see if user exists
         
@@ -62,22 +64,29 @@ class LocalCheckAndMigrate : NSObject, DSQueryable {
                 return .userMatchSkipMigration
 
             } else {
-                
                 TCSLogWithMark("Local name matches, but not password")
                 
-                if DefaultsOverride.standardOverride.string(forKey: PrefKeys.localAdminUserName.rawValue) != nil &&
-                    DefaultsOverride.standardOverride.string(forKey: PrefKeys.localAdminPassword.rawValue) != nil &&
-                    getManagedPreference(key: .PasswordOverwriteSilent) as? Bool ?? false  && isInUserSpace == false {
+                let localAdmin = delegate?.getHint(type: .localAdmin) as? LocalAdminCredentials
+
+                
+                guard let _ = localAdmin else {
+                    TCSLogWithMark("No local admin. prompting")
+                    return .syncPassword
+                }
+                
+                if getManagedPreference(key: .PasswordOverwriteSilent) as? Bool ?? false  && isInUserSpace == false {
                     TCSLogWithMark("Set to write keychain silently and we have admin. Skipping.")
                     TCSLogWithMark("Setting password to be overwritten.")
                     delegate?.setHint(type: .passwordOverwrite, hint: true as NSSecureCoding)
                     TCSLogWithMark("Hint set")
+                    
                     return .complete
                 } else {
                     TCSLogWithMark("setting to sync password")
                     return .syncPassword
                 }
             }
+        
         } catch DSQueryableErrors.notLocalUser {
             TCSLogWithMark("User is not a local user")
             

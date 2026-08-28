@@ -37,7 +37,13 @@
 	<key>shouldShowSystemInfoButton</key>
 	<true/>
 	<key>shouldShowMacLoginButton</key>
-	<string>1</string>
+	<false/>
+	<key>shouldShowAdvancedLoginOptions</key>
+	<true/>
+	<key>shouldAllowUserAccountMapping</key>
+	<true/>
+	<key>shouldShowStandardMacOSLoginOption</key>
+	<false/>
 	<key>shouldShowRefreshBanner</key>
 	<true/>
 	<key>KeychainCreate</key>
@@ -56,6 +62,12 @@
 	<string>Enter Username</string>
 	<key>shouldShowLocalOnlyCheckbox</key>
 	<true/>
+	<key>shouldHideSecureTokenStatus</key>
+	<false/>
+	<key>shouldSkipSettingSecureTokenForAdmin</key>
+	<false/>
+	<key>shouldUseBasicAuth</key>
+	<false/>
 	<key>shouldDetectNetworkToDetermineLoginWindow</key>
 	<false/>
 	<key>shouldUseROPGForPasswordChangeChecking</key>

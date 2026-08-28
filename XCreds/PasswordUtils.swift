@@ -44,7 +44,6 @@ struct SecureTokenCredential {
     var username:String
     var password:String
 }
-
 struct CurrentConsoleUserInfo {
     let recordName: String
     let oidcUsername: String?
@@ -52,7 +51,7 @@ struct CurrentConsoleUserInfo {
     let kerberosPrincipal: String?
 }
 
-class PasswordUtils: NSObject {
+class PasswordUtils: NSObject, DSQueryable {
 
     static let currentConsoleUserName: String = NSUserName()
     static let uid: String = String(getuid())
@@ -162,6 +161,32 @@ class PasswordUtils: NSObject {
         }
     }
 
+    func localAdminCredentialsFromPrefs() -> LocalAdminCredentials? {
+        if let aUsername = DefaultsOverride.standardOverride.string(forKey: PrefKeys.localAdminUserName.rawValue), let aPassword =
+            DefaultsOverride.standardOverride.string(forKey: PrefKeys.localAdminPassword.rawValue), aUsername.isEmpty==false, aPassword.isEmpty==false{
+
+            TCSLogWithMark("Setting Admin User from prefs / override script for keychain reset")
+
+            let localAdmin = LocalAdminCredentials(username: aUsername, password: aPassword)
+            return localAdmin
+        }
+        return nil
+    }
+
+    func isAdminUser(username:String) -> Bool{
+        
+        do {
+            let record = try getLocalRecord(username)
+            
+            if self.isAdmin(record)==true {
+               return true
+            }
+        }
+        catch {
+            return false
+        }
+        return false
+    }
     class func getCurrentConsoleUserRecord() -> ODRecord? {
         // Get ODRecords where record name is equal to the Current Console User's username
         let session = ODSession.default()

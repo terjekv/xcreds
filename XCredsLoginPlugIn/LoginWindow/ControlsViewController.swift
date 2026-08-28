@@ -19,7 +19,9 @@ class ControlsViewController: NSViewController, NSPopoverDelegate {
     @IBOutlet weak var restartGridColumn: NSGridColumn?
 
     @IBOutlet weak var systemInfoButton: NSButton!
+    @IBOutlet weak var macLoginWindowButton: NSButton?
     @IBOutlet weak var macLoginWindowGridColumn: NSGridColumn?
+    @IBOutlet weak var advancedOptionsButton: NSButton?
     @IBOutlet weak var wifiGridColumn: NSGridColumn?
 
     @IBOutlet weak var toolsView: NSView?
@@ -29,7 +31,6 @@ class ControlsViewController: NSViewController, NSPopoverDelegate {
 
     var loadPageURL:URL?
     var wifiWindowController:WifiWindowController?
-    @IBOutlet weak var trialVersionStatusTextField: NSTextField!
 
     var refreshTimer:Timer?
     var commandKeyDown = false
@@ -37,6 +38,8 @@ class ControlsViewController: NSViewController, NSPopoverDelegate {
     var controlKeyDown = false
     var allowPopoverClose:Bool = true
     var keyCodesPressed:[UInt16:Bool]=[:]
+    var secureTokenError:Bool?
+    private var isShowingCloudLogin = true
 
     static func initFromPlugin() -> ControlsViewController?{
 
@@ -93,8 +96,11 @@ class ControlsViewController: NSViewController, NSPopoverDelegate {
             systemInfoPopover.performClose(self)
             return
         }
+        let systemInfo = SystemInfoHelper()
+       
+        systemInfo.secureTokenError = secureTokenError
         
-        var sysInfo = SystemInfoHelper().info().joined(separator: "\n")
+        var sysInfo = systemInfo.info().joined(separator: "\n")
 
         if let prefDomainName=getManagedPreference(key: .ADDomain) as? String{
 
@@ -214,55 +220,10 @@ class ControlsViewController: NSViewController, NSPopoverDelegate {
         NSEvent.addLocalMonitorForEvents(matching: .keyDown, handler: keyDown(key:))
         NSEvent.addLocalMonitorForEvents(matching: .keyUp, handler: keyUp(key:))
         setupSystemInfoButton()
+        updateLoginSwitchTitle()
         NSEvent.addLocalMonitorForEvents(matching: .flagsChanged, handler: commandKey(evt:))
 
 
-        let licenseState = LicenseChecker().currentLicenseState()
-        self.trialVersionStatusTextField?.isHidden = false
-
-        switch licenseState {
-
-        case .valid(let secRemaining):
-            self.trialVersionStatusTextField?.isHidden = true
-
-            let daysRemaining = Int(secRemaining/(24*60*60))
-            TCSLogWithMark("valid license. Days remaining: \(daysRemaining) (\(secRemaining) seconds)")
-            if daysRemaining < 14 {
-                self.trialVersionStatusTextField.stringValue = "License Expires in \(daysRemaining) days"
-                self.trialVersionStatusTextField?.isHidden = false
-            }
-
-            break;
-
-        case .expired:
-            self.trialVersionStatusTextField?.isHidden = false
-            self.trialVersionStatusTextField.stringValue = "License Expired. Please visit twocanoes.com for more information."
-
-
-        case .trial(let daysRemaining):
-            TCSLogWithMark("Trial")
-            self.trialVersionStatusTextField?.isHidden = false
-            if daysRemaining==1 {
-                self.trialVersionStatusTextField.stringValue = "XCreds Trial. One day remaining."
-
-            }
-            else {
-                self.trialVersionStatusTextField.stringValue = "XCreds Trial. \(daysRemaining) days remaining."
-            }
-
-        case .trialExpired:
-            TCSLogErrorWithMark("Trial Expired. Purchase a license at twocanoes.com")
-            self.trialVersionStatusTextField?.isHidden = false
-            self.trialVersionStatusTextField.stringValue = "Trial Expired. Purchase a license at twocanoes.com"
-
-
-
-        case .invalid:
-            TCSLogErrorWithMark("invalid license")
-            self.trialVersionStatusTextField?.isHidden = false
-            self.trialVersionStatusTextField.stringValue = "Invalid License. Please visit twocanoes.com for more information."
-
-        }
         TCSLogWithMark()
         setupLoginWindowControlsAppearance()
 
@@ -305,7 +266,9 @@ class ControlsViewController: NSViewController, NSPopoverDelegate {
 
             TCSLogWithMark()
 
-            self.wifiGridColumn?.isHidden = !DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldShowConfigureWifiButton.rawValue)
+            // Wi-Fi configuration is available from the Advanced menu. Keep the
+            // legacy standalone column hidden so the footer stays uncluttered.
+            self.wifiGridColumn?.isHidden = true
 
             self.shutdownGridColumn?.isHidden = !DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldShowShutdownButton.rawValue)
 
@@ -319,6 +282,7 @@ class ControlsViewController: NSViewController, NSPopoverDelegate {
             TCSLogWithMark()
 
             self.macLoginWindowGridColumn?.isHidden = !DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldShowMacLoginButton.rawValue)
+            self.advancedOptionsButton?.isHidden = !DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldShowAdvancedLoginOptions.rawValue)
 
 
         }
@@ -422,14 +386,105 @@ class ControlsViewController: NSViewController, NSPopoverDelegate {
 
         delegate.allowLogin()
     }
-    @IBAction func resetToStandardLoginWindow(_ sender: Any) {
-        var shouldSwitch = true
-        TCSLogWithMark("switch login window")
-        if commandKeyDown == false {
 
-            NotificationCenter.default.post(name: NSNotification.Name("SwitchLoginWindow"), object: self)
-            return
+    func setLoginWindowType(isCloud: Bool) {
+        DispatchQueue.main.async {
+            self.isShowingCloudLogin = isCloud
+            self.updateLoginSwitchTitle()
         }
+    }
+
+    private var loginSwitchTitle: String {
+        isShowingCloudLogin ? "Use Local Login" : "Use Cloud Login"
+    }
+
+    private func updateLoginSwitchTitle() {
+        macLoginWindowButton?.title = loginSwitchTitle
+    }
+
+    @IBAction func switchLoginWindow(_ sender: Any) {
+        TCSLogWithMark("switching between cloud and local login")
+        NotificationCenter.default.post(name: NSNotification.Name("SwitchLoginWindow"), object: self)
+    }
+
+    @IBAction func showAdvancedOptions(_ sender: NSButton) {
+        let menu = NSMenu(title: "Advanced Login Options")
+        menu.autoenablesItems = false
+
+        let switchLoginItem = NSMenuItem(
+            title: loginSwitchTitle,
+            action: #selector(switchLoginWindowFromAdvanced(_:)),
+            keyEquivalent: ""
+        )
+        switchLoginItem.target = self
+        switchLoginItem.isEnabled = true
+        menu.addItem(switchLoginItem)
+
+        if DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldShowConfigureWifiButton.rawValue) {
+            let configureWiFiItem = NSMenuItem(
+                title: "Configure Wi-Fi…",
+                action: #selector(configureWiFiFromAdvanced(_:)),
+                keyEquivalent: ""
+            )
+            configureWiFiItem.target = self
+            configureWiFiItem.isEnabled = true
+            menu.addItem(configureWiFiItem)
+        }
+
+        if DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldAllowUserAccountMapping.rawValue) {
+            let mappingItem = NSMenuItem(
+                title: "Link to Existing Account on This Sign-In",
+                action: #selector(toggleAccountMapping(_:)),
+                keyEquivalent: ""
+            )
+            mappingItem.target = self
+            mappingItem.isEnabled = true
+            mappingItem.state = LoginSessionOptions.shared.isAccountMappingRequested ? .on : .off
+            mappingItem.toolTip = "After authentication, ask for the username and password of an existing local account instead of creating a separate account."
+            menu.addItem(mappingItem)
+        }
+
+        if DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldShowStandardMacOSLoginOption.rawValue) {
+            menu.addItem(.separator())
+            let standardLoginItem = NSMenuItem(
+                title: "Use Standard macOS Login Window…",
+                action: #selector(switchToStandardMacOSLoginWindow(_:)),
+                keyEquivalent: ""
+            )
+            standardLoginItem.target = self
+            standardLoginItem.isEnabled = true
+            menu.addItem(standardLoginItem)
+        }
+
+        menu.popUp(
+            positioning: nil,
+            at: NSPoint(x: sender.bounds.minX, y: sender.bounds.maxY),
+            in: sender
+        )
+    }
+
+    @objc private func switchLoginWindowFromAdvanced(_ sender: NSMenuItem) {
+        switchLoginWindow(sender)
+    }
+
+    @objc private func configureWiFiFromAdvanced(_ sender: NSMenuItem) {
+        showNetworkConnection(sender)
+    }
+
+    @objc private func toggleAccountMapping(_ sender: NSMenuItem) {
+        let requested = !LoginSessionOptions.shared.isAccountMappingRequested
+        LoginSessionOptions.shared.setAccountMappingRequested(requested)
+        sender.state = requested ? .on : .off
+        TCSLogWithMark(requested ? "account mapping requested for this sign-in" : "account mapping disabled for this sign-in")
+    }
+
+    @objc private func switchToStandardMacOSLoginWindow(_ sender: NSMenuItem) {
+        requestStandardMacOSLoginWindow()
+    }
+
+    private func requestStandardMacOSLoginWindow() {
+        var shouldSwitch = true
+        TCSLogWithMark("switching to the standard macOS login window")
 
         if UserDefaults.standard.bool(forKey:PrefKeys.shouldUseKillWhenLoginWindowSwitching.rawValue)==false{
 
@@ -467,5 +522,3 @@ class ControlsViewController: NSViewController, NSPopoverDelegate {
 
 
 }
-
-

@@ -6,6 +6,7 @@
 #import "TCSUnifiedLogger.h"
 #import "TCSReturnWindow.h"
 #import "TCSKeychain.h"
+#import "TCTaskHelper.h"
 #include <membership.h>
 #import "DNSResolver.h"
 #import "TCTaskWrapperWithBlocks.h"
