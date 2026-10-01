@@ -291,7 +291,6 @@ class TokenManager:DSQueryable {
             //            mechanismDelegate.denyLogin(message:"The identity token is incorrect length.")
         }
         let body = array[1]
-        TCSLogWithMark("base64 encoded IDToken: \(body)");
         guard let data = base64UrlDecode(value:body ) else {
             TCSLogErrorWithMark("error decoding id token base64")
             throw ProcessTokenResult.error("The identity token could not be decoded from base64.")
@@ -309,9 +308,6 @@ class TokenManager:DSQueryable {
         }
 
         let data = try idTokenData(jwtString: idToken)
-        if let decodedTokenString = String(data: data, encoding: .utf8) {
-            TCSLogWithMark("IDToken:\(decodedTokenString)")
-        }
 
         let decoder = JSONDecoder()
         var idTokenObject:IDToken
@@ -321,7 +317,6 @@ class TokenManager:DSQueryable {
         }
         catch {
             TCSLogErrorWithMark("error decoding idtoken::")
-            TCSLogErrorWithMark("Token:\(data)")
             throw ProcessTokenResult.error("The identity token could not be decoded from json")
         }
 
@@ -549,15 +544,15 @@ class TokenManager:DSQueryable {
 extension TokenManager {
 
     func ropgSuccess(errorMessage: String) {
-        TCSLogWithMark("ropgSuccess: \(errorMessage)")
+        TCSLogWithMark("ROPG returned an authentication result")
         feedbackDelegate?.tokenError(errorMessage)
 
     }
 
 
     func authFailure(message: String) {
-        XCredsAudit().auditError(message)
-        TCSLogWithMark("authFailure: \(message)")
+        XCredsAudit().auditError("Identity provider authentication failed")
+        TCSLogWithMark("Identity provider authentication failed")
         feedbackDelegate?.tokenError(message)
     }
 
@@ -606,7 +601,7 @@ extension TokenManager {
                 self.feedbackDelegate?.invalidCredentials()
             }
             else {
-                let err = "error gettings tokens: jsonDict:\(String(describing: tokens.jsonDict?.debugDescription))"
+                let err = "The identity provider did not return the required tokens."
 
                 self.feedbackDelegate?.tokenError(err)
             }

@@ -21,9 +21,9 @@ class ScheduleManager:NoMADUserSessionDelegate {
 
 
     func tokenError(_ err: String) {
-        TCSLogErrorWithMark("authFailure: \(err)")
+        TCSLogErrorWithMark("Identity provider authentication failed")
         feedbackDelegate?.credentialsCheckFailed()
-        XCredsAudit().auditError(err)
+        XCredsAudit().auditError("Identity provider authentication failed")
 //        //        NotificationCenter.default.post(name: Notification.Name("TCSTokensUpdated"), object: self, userInfo:[:])
 //        if DefaultsOverride.standardOverride.bool(forKey: PrefKeys.showDebug.rawValue) == true {
 //
@@ -216,10 +216,12 @@ class ScheduleManager:NoMADUserSessionDelegate {
                     refreshToken != ""  {
                 hasValidRefreshToken = true
             }
-            if hasValidRefreshToken ||
-                DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldUseROPGForPasswordChangeChecking.rawValue) ||
-                DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldUseLDAPForPasswordChangeChecking.rawValue)
-            {
+            let passwordCheck = AuthenticationPolicy.passwordCheck(
+                useLDAP: DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldUseLDAPForPasswordChangeChecking.rawValue),
+                useROPG: DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldUseROPGForPasswordChangeChecking.rawValue),
+                hasRefreshToken: hasValidRefreshToken
+            )
+            if passwordCheck != .none {
 
                 TCSLogWithMark("We have a refresh token or are using ROPG/LDAP for menu login.")
 
@@ -264,36 +266,38 @@ class ScheduleManager:NoMADUserSessionDelegate {
                         return
                     }
 
-                    if hasValidRefreshToken || DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldUseROPGForPasswordChangeChecking.rawValue) == true {
+                    if passwordCheck == .oidc {
                     do{
                         try await tokenManager.oidc().getEndpoints()
                         TCSLogWithMark("requesting new access token")
-                        let tokenResponse = try await tokenManager.getNewAccessToken()
+                        guard let tokenResponse = try await tokenManager.getNewAccessToken(), tokenResponse.hasAccess() else {
+                            throw OIDCLiteError.authFailure("No access token returned")
+                        }
                         TCSLogWithMark("success. Setting new token.")
                         ud.removeObject(forKey: PrefKeys.lastOIDCLoginFailTimestamp.rawValue)
 
-                        feedbackDelegate?.credentialsUpdated(Creds(accessToken: tokenResponse?.accessToken, idToken: tokenResponse?.idToken, refreshToken: tokenResponse?.refreshToken, password:tokenResponse?.password, jsonDict: [:]))
+                        feedbackDelegate?.credentialsUpdated(Creds(accessToken: tokenResponse.accessToken, idToken: tokenResponse.idToken, refreshToken: tokenResponse.refreshToken, password:tokenResponse.password, jsonDict: [:]))
                     }
                         catch let error  {
                             
                             TCSLogWithMark("Error")
                             switch error {
                                 
-                            case OIDCLiteError.authFailure(let mesg):
-                                TCSLogWithMark("invalid credentials: \(mesg)")
+                            case OIDCLiteError.authFailure:
+                                TCSLogWithMark("Identity provider rejected credentials")
                                 TCSLogWithMark("Setting last failed login timestamp to now.")
                                 
                                 ud.setValue(ISO8601DateFormatter().string(from: Date()), forKey: PrefKeys.lastOIDCLoginFailTimestamp.rawValue)
                                 feedbackDelegate?.invalidCredentials()
                                 
                             default:
-                                TCSLogWithMark("Delaying check for oidc tokens because endpoints are not available yet. Error: \(error)")
+                                TCSLogWithMark("Delaying check for oidc tokens because endpoints are not available yet. Error: \(AuthenticationPolicy.errorSummary(error))")
                                 nextTokenCheckTime=Date.distantPast
                                 
                             }
                         }
                     }
-                    else if DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldUseLDAPForPasswordChangeChecking.rawValue) == true {
+                    else if passwordCheck == .ldap {
                         let localCredFromKeychain =  keychainUtil.findPassword(serviceName: PrefKeys.password.rawValue,accountName:PrefKeys.password.rawValue)
 
                     

@@ -33,6 +33,7 @@ for tool in xcodebuild codesign pkgbuild productsign pkgutil ditto; do
 done
 
 mkdir -p "${output_dir}" "${export_path}" "${package_root}/Applications" "${package_scripts}"
+"${repo_root}/scripts/test.sh"
 /usr/bin/ditto "${repo_root}/build_resources/exportOptions.plist" "${export_options}"
 /usr/libexec/PlistBuddy -c "Set :teamID ${team_id}" "${export_options}"
 
@@ -47,8 +48,10 @@ xcodebuild \
     -archivePath "${archive_path}" \
     -derivedDataPath "${derived_data_path}" \
     -clonedSourcePackagesDirPath "${repo_root}/build/SourcePackages" \
+    -onlyUsePackageVersionsFromResolvedFile \
     -allowProvisioningUpdates \
     DEVELOPMENT_TEAM="${team_id}" \
+    ONLY_ACTIVE_ARCH=NO \
     archive
 
 xcodebuild \
@@ -121,6 +124,25 @@ else
 fi
 
 /bin/mv "${signed_package}" "${final_package}"
+
+python3 - "${repo_root}" "${final_package}" "${version}" "${build_number}" "${notary_profile:+yes}" <<'PY'
+import datetime, hashlib, json, pathlib, subprocess, sys
+root, package, version, build, notarized = sys.argv[1:]
+package = pathlib.Path(package)
+def git(*args):
+    return subprocess.check_output(["git", "-C", root, *args], text=True).strip()
+resolved = pathlib.Path(root) / "XCreds.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+metadata = {
+    "version": version, "build": build, "source_commit": git("rev-parse", "HEAD"),
+    "dirty": bool(git("status", "--porcelain")), "notarized": notarized == "yes",
+    "built_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    "xcode": subprocess.check_output(["xcodebuild", "-version"], text=True).strip(),
+    "package": package.name, "sha256": hashlib.sha256(package.read_bytes()).hexdigest(),
+    "dependencies": json.loads(resolved.read_text())["pins"],
+}
+package.with_suffix(package.suffix + ".json").write_text(json.dumps(metadata, indent=2) + "\n")
+package.with_suffix(package.suffix + ".sha256").write_text(f'{metadata["sha256"]}  {package.name}\n')
+PY
 
 echo "Created ${final_package}"
 echo "Kept release work directory at ${work_dir}"

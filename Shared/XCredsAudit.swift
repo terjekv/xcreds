@@ -45,7 +45,9 @@ class XCredsAudit {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .xml
         do {
-          let data = try encoder.encode(auditRecord)
+            var sanitizedRecord = auditRecord
+            sanitizedRecord.identityToken = nil
+            let data = try encoder.encode(sanitizedRecord)
             try data.write(to: configFileURL)
         } catch {
             TCSLogWithMark(error.localizedDescription)
@@ -53,13 +55,8 @@ class XCredsAudit {
 
     }
     func tokensUpdated(idToken:String)  {
-        var auditRecord = AuditRecord()
-        var decodedIdToken:String=idToken
-        if let decodedTokenString = try? String(data: TokenManager().idTokenData(jwtString: idToken), encoding: .utf8) {
-            decodedIdToken = decodedTokenString
-        }
-
-        auditRecord.identityToken = decodedIdToken
+        var auditRecord = currentAuditRecord()
+        auditRecord.identityToken = nil
         auditRecord.identityTokenUpdateDate = Date()
         saveAuditRecord(auditRecord)
 
@@ -88,7 +85,8 @@ class XCredsAudit {
         if FileManager.default.fileExists(atPath:configFileURL.path){
             if let data = try? Data(contentsOf: configFileURL) {
               let decoder = PropertyListDecoder()
-                if let auditRecord =  try? decoder.decode(AuditRecord.self, from: data) {
+                if var auditRecord =  try? decoder.decode(AuditRecord.self, from: data) {
+                    auditRecord.identityToken = nil
                     return auditRecord
                 }
             }
@@ -99,7 +97,8 @@ class XCredsAudit {
         if FileManager.default.fileExists(atPath:path){
             if let data = try? Data(contentsOf: URL(filePath:path)) {
               let decoder = PropertyListDecoder()
-                if let auditRecord =  try? decoder.decode(AuditRecord.self, from: data) {
+                if var auditRecord =  try? decoder.decode(AuditRecord.self, from: data) {
+                    auditRecord.identityToken = nil
                     return auditRecord
                 }
             }
@@ -122,9 +121,6 @@ class XCredsAudit {
             returnDict["username"] = username
         }
 
-        if let identityToken = auditRecord.identityToken {
-            returnDict["identityToken"] = identityToken
-        }
 
         if let identityTokenUpdateDate = auditRecord.identityTokenUpdateDate {
             returnDict["identityTokenUpdateDate"] = identityTokenUpdateDate.description
@@ -156,4 +152,3 @@ class XCredsAudit {
 
     }
 }
-

@@ -1,6 +1,6 @@
 {
     "title": "XCreds (no.uio.math.xcreds)",
-    "description": "XCreds 5.9.2 (9150) OAuth Settings",
+    "description": "XCreds 5.9.3 (9151) OAuth Settings",
     "properties": {
         "ADDomain": {
             "type": "string",

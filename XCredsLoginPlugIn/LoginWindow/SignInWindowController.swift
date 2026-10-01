@@ -98,8 +98,8 @@ protocol UpdateCredentialsFeedbackProtocol {
 
     func tokenError(_ err:String){
         updateCredentialsFeedbackDelegate?.credentialsCheckFailed()
-        TCSLogWithMark("Token error: \(err)")
-        XCredsAudit().auditError(err)
+        TCSLogWithMark("Identity provider authentication failed")
+        XCredsAudit().auditError("Identity provider authentication failed")
         shakeWindowAndShowError()
     }
 
@@ -611,11 +611,15 @@ protocol UpdateCredentialsFeedbackProtocol {
             TCSLogWithMark("No password entered")
             return
         }
-        if (self.localOnlyCheckBox.state == .off)  {
+        if AuthenticationPolicy.shouldParseADUsername(
+            localOnly: localOnlyCheckBox.state == .on,
+            domain: DefaultsOverride.standardOverride.string(forKey: PrefKeys.aDDomain.rawValue)
+        ) {
             updateLoginWindowInfo()
         }
         else {
 
+            domainName = ""
             shortName = strippedUsername
         }
         processLogin(inShortname: shortName, inPassword: passString)

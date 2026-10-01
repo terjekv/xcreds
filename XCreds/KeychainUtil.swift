@@ -38,69 +38,50 @@ struct PasswordItem{
 
 }
 class KeychainUtil {
+    // Kept overridable so integration tests can use their own signed executable.
+    var trustedPartitions: [String] { ["apple:", "teamid:SC6H7VDLB4"] }
 
-//    var myErr: OSStatus
-//    let serviceName = "xcreds"
+    private func targetKeychain(_ keychain: SecKeychain?) -> SecKeychain? {
+        if let keychain { return keychain }
+        guard let userKeychain = XCredsLegacyKeychainForDomain(.user) else {
+            TCSLogErrorWithMark("Could not open the user's default keychain")
+            return nil
+        }
+        return (userKeychain as! SecKeychain)
+    }
 
-//    var myKeychainItem: SecKeychainItem?
-
-//    init() {
-//        myErr = 0
-//    }
-
-  
-
-    private func passwordQuery(
-        serviceName: String,
-        accountName: String?,
-        keychain: SecKeychain? = nil
-    ) -> [String: Any] {
+    private func passwordQuery(serviceName: String, accountName: String?, keychain: SecKeychain?) -> [String: Any]? {
+        // Fail closed if the intended keychain is unavailable. Omitting this
+        // restriction would search/update/delete matching items in other keychains.
+        guard let keychain = targetKeychain(keychain) else { return nil }
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: serviceName
+            kSecAttrService as String: serviceName,
+            kSecMatchSearchList as String: [keychain]
         ]
-        if let accountName {
-            query[kSecAttrAccount as String] = accountName
-        }
-        if let keychain {
-            query[kSecUseKeychain as String] = keychain
-        }
+        if let accountName { query[kSecAttrAccount as String] = accountName }
         return query
     }
 
-    // Find an existing generic password with the supported SecItem API.
     func findPassword(serviceName: String, accountName: String?, keychain: SecKeychain? = nil) -> PasswordItem? {
-        TCSLogWithMark("Finding \(serviceName) in keychain")
-        TCSLogWithMark("find password for account:\(String(describing: accountName)) service:\(serviceName)")
-
-        var query = passwordQuery(serviceName: serviceName, accountName: accountName, keychain: keychain)
+        guard var query = passwordQuery(serviceName: serviceName, accountName: accountName, keychain: keychain) else { return nil }
         query[kSecReturnAttributes as String] = true
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
-
         var result: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
         guard status == errSecSuccess else {
-            if status != errSecItemNotFound {
-                TCSLogErrorWithMark("Error finding \(serviceName) in keychain: \(status)")
-            }
+            if status != errSecItemNotFound { TCSLogErrorWithMark("Keychain lookup failed: \(status)") }
             return nil
         }
-
         guard let item = result as? [String: Any],
               let account = item[kSecAttrAccount as String] as? String,
-              let passwordData = item[kSecValueData as String] as? Data,
-              let password = String(data: passwordData, encoding: .utf8),
-              !password.isEmpty else {
-            TCSLogErrorWithMark("Could not decode \(serviceName) from the keychain")
-            return nil
-        }
-
-        TCSLogWithMark("\(serviceName) found in keychain")
+              let data = item[kSecValueData as String] as? Data,
+              let password = String(data: data, encoding: .utf8), !password.isEmpty else { return nil }
         return PasswordItem(username: account, password: password)
     }
-    @available(macOS, deprecated: 10.10)
 
+    @available(macOS, deprecated: 10.10)
     func trustedApps() -> [SecTrustedApplication] {
         let paths = [
             "/Applications/XCreds.app",
@@ -108,262 +89,117 @@ class KeychainUtil {
             "/System/Library/Frameworks/Security.framework/Versions/A/MachServices/authorizationhost.bundle/Contents/XPCServices/authorizationhosthelper.x86_64.xpc",
             "/System/Library/Frameworks/Security.framework/Versions/A/MachServices/authorizationhost.bundle/Contents/XPCServices/authorizationhosthelper.arm64.xpc"
         ]
-        var secApps = [SecTrustedApplication]()
-
-        for path in paths where FileManager.default.fileExists(atPath: path) {
-            guard let application = XCredsLegacyTrustedApplication(path) else {
-                TCSLogWithMark("error appending trust for \(path)")
-                continue
-            }
-            secApps.append(application as! SecTrustedApplication)
+        return paths.compactMap { path in
+            guard FileManager.default.fileExists(atPath: path),
+                  let application = XCredsLegacyTrustedApplication(path) else { return nil }
+            return (application as! SecTrustedApplication)
         }
-        return secApps
     }
 
-    // set the password
+    /// Migrate signing partitions without replacing the item's application ACL.
+    /// Preserve existing restrictions and user customizations. A change in the
+    /// application's signing identity may need separate macOS approval; this
+    /// password-authorized operation updates only the signing partition.
     @available(macOS, deprecated: 10.10)
-
-    func setPassword(serviceName:String, accountName: String, pass: String, keychainPassword:String, keychain:SecKeychain?=nil) -> SecKeychainItem? {
-        
-        
-        let account = accountName
-        let passwordData = pass.data(using: String.Encoding.utf8)!
-        var keychainItem:CFTypeRef?
-        var keychainToUse:SecKeychain
-        
-        TCSLogWithMark("Setting password for account:\(accountName) service:(serviceName)")
-
-        
-        if let keychain = keychain {
-            os_log("using provided keychain")
-            keychainToUse=keychain
-        }
-        else {
-            os_log("using user keychain")
-
-            guard let userKeychain = XCredsLegacyKeychainForDomain(SecPreferencesDomain.user) else {
-                os_log("error getting user keychain")
-                return nil
-            }
-            keychainToUse = userKeychain as! SecKeychain
-        }
-
-
-        TCSLogWithMark("Creating ACL")
-        //create the default ACLs as SecAccess so we can modify them
-        guard let secAccessObject = XCredsLegacyAccess(accountName as CFString, nil) else {
-            TCSLogWithMark("Error setting ACL")
-            return nil
-        }
-        let secAccess = secAccessObject as! SecAccess
-        
-        //In order to not get prompted, the app that are allowed to use the
-        // ACLAuthorizationDecrypt operation
-        //must be included when the ACLs are created.
-        //convert the ACLs to a list and then go through them
-        //and modify ACLAuthorizationDecrypt. ACLAuthorizationDecrypt is the right
-        //that is needed to give apps access to a password
-        //adding the app path is not enough; the team id needs to
-        //be added to the partition ACL, but we can't create that ACL.
-        //We have create the ACLs and then the partition ACL gets added.
-        //We then loop over, find it, and modify it.
-        
-        //convert opaque secAccess to an array
-        guard let initialACLs = XCredsLegacyACLList(secAccess) as? [SecACL] else {
-            TCSLogWithMark("Error reading newly created ACL")
-            return nil
-        }
-        //get a list of the trusted apps to share the password
-        let secApps = trustedApps()
-         
-        //loop over them looking for ACLAuthorizationDecrypt
-        for acl in initialACLs {
+    private func updateAccess(for item: SecKeychainItem, keychainPassword: String) -> Bool {
+        guard let object = XCredsLegacyKeychainItemAccess(item) else { return false }
+        let access = object as! SecAccess
+        guard let acls = XCredsLegacyACLList(access) as? [SecACL] else { return false }
+        var foundPartition = false
+        for acl in acls {
+            guard let authorizations = XCredsLegacyACLAuthorizations(acl) else { return false }
+            guard authorizations.contains("ACLAuthorizationPartitionID") else { continue }
+            foundPartition = true
             var prompt = SecKeychainPromptSelector()
-            guard XCredsLegacyACLContents(acl, &prompt) != nil else {
-                continue
+            guard let contents = XCredsLegacyACLContents(acl, &prompt),
+                  var description = contents[XCredsLegacyACLDescriptionKey] as? String else { return false }
+            do {
+                guard let data = Data(fromHexEncodedString: description),
+                      var plist = (try? PropertyListSerialization.propertyList(from: data, format: nil)) as? [String: Any] else {
+                    TCSLogErrorWithMark("Could not decode keychain signing partitions")
+                    return false
+                }
+                plist["Partitions"] = trustedPartitions
+                guard let data = try? PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0) else { return false }
+                description = data.hexEncodedString()
             }
-            let authArray = XCredsLegacyACLAuthorizations(acl)
-            
-            //set the apps that are allowed to have access to the password item
-            if authArray?.contains("ACLAuthorizationDecrypt") == true {
-                
-                TCSLogWithMark("Found ACLAuthorizationDecrypt.")
-                XCredsLegacyACLSetContents(acl, secApps as CFArray, "" as CFString, prompt)
-                continue
+            let applications = contents[XCredsLegacyACLApplicationsKey] as? NSArray
+            let status = XCredsLegacyACLSetContents(acl, applications, description as CFString, prompt)
+            guard status == errSecSuccess else {
+                TCSLogErrorWithMark("Could not update credential ACL: \(status)")
+                return false
             }
         }
-                
-        let attributes: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
-                                    kSecAttrAccount as String: account,
-                                    kSecAttrService as String: serviceName,
-                                    kSecValueData as String: passwordData,
-                                    kSecAttrAccess as String: secAccess as SecAccess,
-                                     kSecUseKeychain as String:keychainToUse as Any,
-                                    kSecReturnRef as String: true
+        // Older/custom keychains can lack partition ACLs. There is no signing
+        // partition to migrate there, and their existing access rules stay intact.
+        guard foundPartition else { return true }
+        let status = XCredsLegacyKeychainItemSetAccess(item, access, Data(keychainPassword.utf8))
+        if status != errSecSuccess { TCSLogErrorWithMark("Could not save credential ACL: \(status)") }
+        return status == errSecSuccess
+    }
+
+    @available(macOS, deprecated: 10.10)
+    func setPassword(serviceName: String, accountName: String, pass: String, keychainPassword: String, keychain: SecKeychain? = nil) -> SecKeychainItem? {
+        guard let keychain = targetKeychain(keychain) else { return nil }
+        let apps = trustedApps()
+        guard !apps.isEmpty,
+              let object = XCredsLegacyAccess(accountName as CFString, apps as CFArray) else { return nil }
+        let attributes: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: accountName,
+            kSecAttrService as String: serviceName,
+            kSecValueData as String: Data(pass.utf8),
+            kSecAttrAccess as String: object as! SecAccess,
+            kSecUseKeychain as String: keychain,
+            kSecReturnRef as String: true
         ]
-        
-        TCSLogWithMark("Calling SecItemAdd, returning new keychain item (generic password)")
-        let res = SecItemAdd(attributes as CFDictionary, &keychainItem)
-        if  res != OSStatus(errSecSuccess)  {
-            TCSLogWithMark("Error SecItemAdd: \(res) ")
+        var result: CFTypeRef?
+        let status = SecItemAdd(attributes as CFDictionary, &result)
+        guard status == errSecSuccess, let result else {
+            TCSLogErrorWithMark("Could not create credential item: \(status)")
             return nil
         }
-        
-        let secKeychainItem = keychainItem as! SecKeychainItem
-        guard let accessControlListObject = XCredsLegacyKeychainItemAccess(secKeychainItem) else {
-            TCSLogWithMark("invalid accessControlList")
+        let item = result as! SecKeychainItem
+        guard updateAccess(for: item, keychainPassword: keychainPassword) else {
+            // Delete only this newly created item, never a pre-existing credential.
+            SecItemDelete([kSecValueRef as String: item] as CFDictionary)
             return nil
         }
-        let accessControlList = accessControlListObject as! SecAccess
-        //turn the opaque accessControlList to an array of secACLs
-        //so we can iterate over them
-        guard let itemACLs = XCredsLegacyACLList(accessControlList) as? [SecACL] else {
-            TCSLogWithMark("Error reading item ACL")
-            return nil
-        }
-
-        //iterate over the acls in the array
-        //when the acl in the array changes, it changes the items
-        //in the accessControlList but doesn't change the
-        //access control list in the secKeychainItem until
-        //SecKeychainItemSetAccessWithPassword is called
-        
-        for acl in itemACLs {
-            
-            //each ACL has one or more auth operations
-            //a list of apps that have access to those operations
-            //and a prompt selector. the prompt selector is the default
-            //since macOS seems to want to prompt on everything regardless
-            
-            var prompt = SecKeychainPromptSelector()
-            guard let contents = XCredsLegacyACLContents(acl, &prompt) else {
-                continue
-            }
-            
-            //For this ACL, get the operations that it covers
-            
-            let authArray = XCredsLegacyACLAuthorizations(acl)
-            
-            //see if it is ACLAuthorizationPartitionID, which is the
-            //ACL that allows access by team id.
-            if authArray?.contains("ACLAuthorizationPartitionID") == true {
-                TCSLogWithMark("Found ACLAuthorizationPartitionID.")
-                
-                // pull in the description that is a plist
-                guard let description = contents[XCredsLegacyACLDescriptionKey] as? String,
-                      let rawData = Data(fromHexEncodedString: description) else {
-                    TCSLogWithMark("Could not decode ACLAuthorizationPartitionID")
-                    continue
-                }
-                var format: PropertyListSerialization.PropertyListFormat = .xml
-                
-                var propertyListObject = [ String: [String]]()
-                
-                do {
-                    propertyListObject = try PropertyListSerialization.propertyList(from: rawData, options: [], format: &format) as! [ String: [String]]
-                } catch {
-                    TCSLogWithMark("No teamid in ACLAuthorizationPartitionID.")
-                }
-                let teamIds = [ "apple:", "teamid:SC6H7VDLB4" ]
-                
-                propertyListObject["Partitions"] = teamIds
-                
-                // now serialize it back into a plist
-                
-                guard let xmlObject = try? PropertyListSerialization.data(fromPropertyList: propertyListObject as Any, format: format, options: 0) else {
-                    TCSLogWithMark("Could not encode ACLAuthorizationPartitionID")
-                    continue
-                }
-                
-                // now that all ACLs has been adjusted, we can update the item
-                
-                let err = XCredsLegacyACLSetContents(acl, secApps as CFArray, xmlObject.hexEncodedString() as CFString, prompt)
-                
-                if err == 0 {
-                    TCSLogWithMark("SecACLSetContents success")
-                }
-                else {
-                    TCSLogWithMark("error SecACLSetContents")
-                }
-                
-
-            }
-            
-        }
-        
-        
-        //we really should be using SecKeychainItemSetAccess but it always errors if you change
-        //the partition ID.
-        
-        let passwordBytes = keychainPassword.utf8CString
-        let err = passwordBytes.withUnsafeBufferPointer { buffer in
-            SecKeychainItemSetAccessWithPassword(
-                secKeychainItem,
-                accessControlList,
-                UInt32(max(0, buffer.count - 1)),
-                buffer.baseAddress
-            )
-        }
-
-        if err == 0 {
-            TCSLogWithMark("SecKeychainItemSetAccessWithPassword success")
-        }
-        else {
-            TCSLogWithMark("error SecKeychainItemSetAccessWithPassword: \(err)")
-        }
-
-        return secKeychainItem
-
-
+        return item
     }
+
     @available(macOS, deprecated: 10.10)
-
     func updatePassword(serviceName: String, accountName: String, pass: String, keychainPassword: String, keychain: SecKeychain? = nil) -> Bool {
-        guard let passwordData = pass.data(using: .utf8) else {
-            TCSLogErrorWithMark("Could not encode password for \(accountName)")
+        guard var query = passwordQuery(serviceName: serviceName, accountName: accountName, keychain: keychain) else { return false }
+        query[kSecReturnRef as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status == errSecItemNotFound {
+            return setPassword(serviceName: serviceName, accountName: accountName, pass: pass,
+                               keychainPassword: keychainPassword, keychain: keychain) != nil
+        }
+        guard status == errSecSuccess, let result else {
+            TCSLogErrorWithMark("Could not locate credential to update: \(status)")
             return false
         }
-
-        let query = passwordQuery(serviceName: serviceName, accountName: accountName, keychain: keychain)
-        let updates = [kSecValueData as String: passwordData]
-        let status = SecItemUpdate(query as CFDictionary, updates as CFDictionary)
-
-        if status == errSecSuccess {
-            TCSLogWithMark("updated password for \(accountName) \(serviceName)")
-            return true
-        }
-        guard status == errSecItemNotFound else {
-            TCSLogErrorWithMark("updating password failed for \(accountName): \(status)")
-            return false
-        }
-
-        TCSLogWithMark("setting new password for \(accountName) \(serviceName)")
-        guard setPassword(
-            serviceName: serviceName,
-            accountName: accountName,
-            pass: pass,
-            keychainPassword: keychainPassword,
-            keychain: keychain
-        ) != nil else {
-            TCSLogErrorWithMark("setting new password FAILURE: accountname:\(accountName)")
-            return false
-        }
-        TCSLogWithMark("setting new password success")
-        return true
+        let item = result as! SecKeychainItem
+        // Keep the original password if migrating permissions fails.
+        guard updateAccess(for: item, keychainPassword: keychainPassword) else { return false }
+        let updateStatus = SecItemUpdate([kSecValueRef as String: item] as CFDictionary,
+                                        [kSecValueData as String: Data(pass.utf8)] as CFDictionary)
+        if updateStatus != errSecSuccess { TCSLogErrorWithMark("Could not update credential: \(updateStatus)") }
+        return updateStatus == errSecSuccess
     }
 
-    func clearPasswords(serviceName:String,keychain:SecKeychain?=nil) -> Bool {
+    func clearPasswords(serviceName: String, keychain: SecKeychain? = nil) -> Bool {
         findAndDelete(serviceName: serviceName, accountName: nil, keychain: keychain)
     }
 
-    // Convenience function for deleting one account or all accounts for a service.
-    func findAndDelete(serviceName: String, accountName: String?, keychain:SecKeychain?=nil) -> Bool {
-        let query = passwordQuery(serviceName: serviceName, accountName: accountName, keychain: keychain)
+    func findAndDelete(serviceName: String, accountName: String?, keychain: SecKeychain? = nil) -> Bool {
+        guard let query = passwordQuery(serviceName: serviceName, accountName: accountName, keychain: keychain) else { return false }
         let status = SecItemDelete(query as CFDictionary)
-        if status == errSecSuccess || status == errSecItemNotFound {
-            return true
-        }
-        TCSLogErrorWithMark("deleting password failed for \(serviceName): \(status)")
-        return false
+        if status != errSecSuccess && status != errSecItemNotFound { TCSLogErrorWithMark("Could not delete credential: \(status)") }
+        return status == errSecSuccess || status == errSecItemNotFound
     }
 }

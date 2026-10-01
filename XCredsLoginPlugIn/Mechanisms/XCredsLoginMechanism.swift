@@ -11,6 +11,7 @@ import Network
         case cloud
         case usernamePassword
     }
+    private let connectivityWait = LoginConnectivityWait()
     var timer:Timer?
     let checkADLog = "checkADLog"
     var loginWindowType = LoginWindowType.cloud
@@ -39,6 +40,7 @@ import Network
 
     }
     @objc func tearDown() {
+        connectivityWait.cancel()
         TCSLogWithMark("Got teardown request")
 
      
@@ -207,53 +209,38 @@ import Network
         loginWebViewController=nil
         signInViewController=nil
         
-        let shouldSetSecureToken = self.getHint(type: .shouldSetAdminSecureToken) as? Bool
-        
-        if shouldSetSecureToken == true {
-            let timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: false) { timer in
-                NotificationCenter.default.removeObserver(self, name: .connectivityStatus, object: nil)
-
-                self.setupWindow()
-            }
-
-            NotificationCenter.default.addObserver(forName: .connectivityStatus, object: nil, queue: nil) { notification in
-                timer.invalidate()
-                TCSLogWithMark("shouldSetAdminSecureToken set to true so not showing login window and moving along")
-                
-                let adminUser = self.getHint(type: .localAdmin) as? LocalAdminCredentials
-                if let adminUser = adminUser {
-                        TCSLogWithMark("retrieved admin user and setting context string")
-
-                    //save fvusername and password to use the next time around.
-                    if let username = self.getContextString(type: "fvusername"), let password = self.getContextString(type: "fvpassword") {
-                        self.setStickyContextString(type: HintType.filevaultUsername.rawValue, value: username)
-                        self.setStickyContextString(type: HintType.filevaultPassword.rawValue, value: password)
-                    }
-                    self.setContextString(type: kAuthorizationEnvironmentUsername, value: adminUser.username)
-                    self.setContextString(type: kAuthorizationEnvironmentPassword, value: adminUser.password)
-                    super.allowLogin()
-                    return
-
-                }
-                else {
-                    TCSLogWithMark("could not get admin user so moving on")
-
+        connectivityWait.cancel()
+        if getHint(type: .shouldSetAdminSecureToken) as? Bool == true {
+            connectivityWait.start(notification: .connectivityStatus, timeout: 30) { [weak self] connected in
+                guard let self else { return }
+                // The hint may have changed while waiting for connectivity.
+                guard connected,
+                      self.getHint(type: .shouldSetAdminSecureToken) as? Bool == true,
+                      let adminUser = self.getHint(type: .localAdmin) as? LocalAdminCredentials,
+                      !adminUser.hasEmptyValues() else {
                     self.setupWindow()
-
+                    return
                 }
-                
+                if let username = self.getContextString(type: "fvusername"),
+                   let password = self.getContextString(type: "fvpassword") {
+                    self.setStickyContextString(type: HintType.filevaultUsername.rawValue, value: username)
+                    self.setStickyContextString(type: HintType.filevaultPassword.rawValue, value: password)
+                }
+                self.setContextString(type: kAuthorizationEnvironmentUsername, value: adminUser.username)
+                self.setContextString(type: kAuthorizationEnvironmentPassword, value: adminUser.password)
+                self.allowAdminSecureTokenLogin()
             }
             NetworkMonitor.shared.startMonitoring()
-
-        }
-        else {
+        } else {
             NetworkMonitor.shared.startMonitoring()
-
             setupWindow()
-            
         }
     }
-   
+
+    private func allowAdminSecureTokenLogin() {
+        super.allowLogin()
+    }
+
     func setupWindow() {
         
         if useAutologin()   {
@@ -353,6 +340,7 @@ import Network
         }
     }
     override func allowLogin() {
+        connectivityWait.cancel()
         TCSLogWithMark("Allowing Login")
 
         if loginWebViewController != nil || signInViewController != nil {
@@ -369,6 +357,7 @@ import Network
 
     }
     override func denyLogin(message:String?) {
+        connectivityWait.cancel()
         loginWebViewController?.loadPage()
         TCSLog("***************** DENYING LOGIN FROM LOGIN MECH ********************");
         super.denyLogin(message: message)

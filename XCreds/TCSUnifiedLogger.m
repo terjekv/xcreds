@@ -24,39 +24,28 @@
 void TCSLog(NSString *string)
 {
 
-    os_log(OS_LOG_DEFAULT, "XCREDS_LOG:%{public}s",[string stringByReplacingOccurrencesOfString:@"\n" withString:@"\\n"].UTF8String);
     [[TCSUnifiedLogger sharedLogger] logString:string level:LOGLEVELDEBUG];
 }
 
 void TCSLogInfo(NSString *string)
 {
-    os_log(OS_LOG_DEFAULT, "XCREDS_LOG:%{public}s",[string stringByReplacingOccurrencesOfString:@"\n" withString:@"\\n"].UTF8String);
-
     [[TCSUnifiedLogger sharedLogger] logString:string level:LOGLEVELINFO];
     
 }
 void TCSLogError(NSString *string)
 {
-    os_log(OS_LOG_DEFAULT, "XCREDS_LOG:%{public}s",[string stringByReplacingOccurrencesOfString:@"\n" withString:@"\\n"].UTF8String);
-
     [[TCSUnifiedLogger sharedLogger] logString:string level:LOGLEVELERROR];
 }
 + (TCSUnifiedLogger *)sharedLogger
 {
     static TCSUnifiedLogger *sharedLogger;
 
-    if (sharedLogger !=nil){
-        return sharedLogger;
-    }
-
-
-    if (sharedLogger == nil) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         sharedLogger = [[TCSUnifiedLogger alloc] init];
-    }
-
-    [sharedLogger updateLogPath];
-
-    sharedLogger.lastLoggedDate = [NSDate distantPast];
+        [sharedLogger updateLogPath];
+        sharedLogger.lastLoggedDate = [NSDate distantPast];
+    });
 
     return sharedLogger;
 }
@@ -125,6 +114,11 @@ void TCSLogError(NSString *string)
     if (level==LOGLEVELDEBUG && self.suppressDebug == true) {
         return;
     }
+    // Gate every output on the debug preference, including unified logging.
+    // Callers must never include tokens, passwords, or authorization URLs.
+    os_log_type_t type = level == LOGLEVELERROR ? OS_LOG_TYPE_ERROR : OS_LOG_TYPE_DEFAULT;
+    os_log_with_type(OS_LOG_DEFAULT, type, "XCREDS_LOG:%{private}s",
+                     [inStr stringByReplacingOccurrencesOfString:@"\n" withString:@"\\n"].UTF8String);
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
 
     NSString *processName = [processInfo processName];
