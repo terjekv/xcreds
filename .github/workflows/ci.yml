@@ -1,0 +1,28 @@
+name: Build and regression tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: xcodebuild -version
+      - name: Regression tests and configuration validation
+        run: ./scripts/test.sh
+      - name: Build unsigned universal app
+        run: |
+          xcodebuild -project XCreds.xcodeproj -scheme XCreds \
+            -configuration Release -destination 'generic/platform=macOS' \
+            -derivedDataPath build/DerivedData \
+            -clonedSourcePackagesDirPath build/SourcePackages \
+            -onlyUsePackageVersionsFromResolvedFile \
+            CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO build

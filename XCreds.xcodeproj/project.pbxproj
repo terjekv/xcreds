@@ -338,6 +338,8 @@
 		A10000000000000000000005 /* LegacyKeychainBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* LegacyKeychainBridge.m */; };
 		A10000000000000000000006 /* LegacyKeychainBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* LegacyKeychainBridge.m */; };
 		A10000000000000000000007 /* LegacyKeychainBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* LegacyKeychainBridge.m */; };
+		A19C01000000000000000001 /* AuthenticationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A19C01000000000000000003 /* AuthenticationPolicy.swift */; };
+		A19C01000000000000000002 /* AuthenticationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A19C01000000000000000003 /* AuthenticationPolicy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -676,6 +678,7 @@
 		76FDC5D92B235A4F0035D61E /* StatusMenuWindowController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = StatusMenuWindowController.xib; sourceTree = SOURCE_ROOT; };
 		A10000000000000000000001 /* LegacyKeychainBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LegacyKeychainBridge.h; sourceTree = "<group>"; };
 		A10000000000000000000002 /* LegacyKeychainBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LegacyKeychainBridge.m; sourceTree = "<group>"; };
+		A19C01000000000000000003 /* AuthenticationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/AuthenticationPolicy.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -1104,6 +1107,7 @@
 				76342E592B282653007D4F29 /* DesktopLoginWindowController.swift */,
 				76EE06B327FD1E5F009E0F3A /* WebViewController.swift */,
 				766355E4287148C1002E3867 /* Tokens.swift */,
+				A19C01000000000000000003 /* AuthenticationPolicy.swift */,
 				7681FEC62A4C8BC800F91CD1 /* AboutWindow.xib */,
 				767116AB284AB4C000CCD6FF /* PasswordUtils.swift */,
 				76EE06B527FD1E79009E0F3A /* PreferencesWindow.xib */,
@@ -1623,6 +1627,7 @@
 				766355E328713C4A002E3867 /* LoginWindow.swift in Sources */,
 				76BEF7F82872504C0013E2A1 /* ContextAndHintHandling.swift in Sources */,
 				766355E6287148C1002E3867 /* Tokens.swift in Sources */,
+				A19C01000000000000000002 /* AuthenticationPolicy.swift in Sources */,
 				766D668C2E9620D9009CE2BF /* XCredsLoginPlugIn/NSButton+Color.swift in Sources */,
 				766D667C2E961FDB009CE2BF /* XCreds/LoggerHelper.swift in Sources */,
 				766355CC2870E9AD002E3867 /* WebViewController.swift in Sources */,
@@ -1784,6 +1789,7 @@
 				766D667B2E961FDB009CE2BF /* XCreds/LoggerHelper.swift in Sources */,
 				766D668F2E9620FA009CE2BF /* XCredsLoginPlugIn/NSData+HexString.m in Sources */,
 				766355E5287148C1002E3867 /* Tokens.swift in Sources */,
+				A19C01000000000000000001 /* AuthenticationPolicy.swift in Sources */,
 				7657DEC32B3505CB003A23DB /* ADLDAPPing.swift in Sources */,
 				76EE06AC27FD1D92009E0F3A /* TokenManager.swift in Sources */,
 				766D668D2E9620F5009CE2BF /* XCredsLoginPlugIn/NSData+SHA1.m in Sources */,
@@ -1890,7 +1896,7 @@
 				CODE_SIGN_ENTITLEMENTS = "XCreds AutoFill/XCreds_AutoFill.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1910,7 +1916,7 @@
 					"@executable_path/../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "no.uio.math.xcreds.autofill";
 
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1932,7 +1938,7 @@
 				CODE_SIGN_ENTITLEMENTS = "XCreds AutoFill/XCreds_AutoFill.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1948,7 +1954,7 @@
 					"@executable_path/../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "no.uio.math.xcreds.autofill";
 
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1966,7 +1972,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_ENTITLEMENTS = "XCreds AutoFill Extension/XCreds_AutoFill_Extension.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1986,7 +1992,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "no.uio.math.xcreds.autofill.password";
 
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2005,7 +2011,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_ENTITLEMENTS = "XCreds AutoFill Extension/XCreds_AutoFill_Extension.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2021,7 +2027,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "no.uio.math.xcreds.autofill.password";
 
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2036,7 +2042,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2051,7 +2057,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2069,7 +2075,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2097,7 +2103,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2119,7 +2125,7 @@
 				CODE_SIGN_ENTITLEMENTS = XCreds/xCreds.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2136,7 +2142,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++17";
 				PRODUCT_BUNDLE_IDENTIFIER = no.uio.math.xcreds.loginplugin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2154,7 +2160,7 @@
 				CODE_SIGN_ENTITLEMENTS = XCreds/xCreds.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2171,7 +2177,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++17";
 				PRODUCT_BUNDLE_IDENTIFIER = no.uio.math.xcreds.loginplugin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2188,7 +2194,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2203,7 +2209,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2221,7 +2227,7 @@
 				CODE_SIGN_ENTITLEMENTS = tap/tap.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2238,7 +2244,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = no.uio.math.xcreds.tap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -2257,7 +2263,7 @@
 				CODE_SIGN_ENTITLEMENTS = tap/tap.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2274,7 +2280,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = no.uio.math.xcreds.tap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -2292,7 +2298,7 @@
 				CODE_SIGN_ENTITLEMENTS = "XCreds Login Overlay/XCreds_Login_Overlay.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2304,7 +2310,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "no.uio.math.xcreds.loginoverlay";
 
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2323,7 +2329,7 @@
 				CODE_SIGN_ENTITLEMENTS = "XCreds Login Overlay/XCreds_Login_Overlay.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2335,7 +2341,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "no.uio.math.xcreds.loginoverlay";
 
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2380,7 +2386,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
@@ -2404,7 +2410,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "©  2025 Twocanoes Software, Inc";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Detect if there is a connection to the internets";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 5.4;
+				MARKETING_VERSION = 5.9.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -2449,7 +2455,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
@@ -2467,7 +2473,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "©  2025 Twocanoes Software, Inc";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Detect if there is a connection to the internets";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 5.4;
+				MARKETING_VERSION = 5.9.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -2486,7 +2492,7 @@
 				CODE_SIGN_ENTITLEMENTS = XCreds/xCreds.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2506,7 +2512,7 @@
 					"$(SDKROOT)/usr/lib/system",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = no.uio.math.xcreds;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -2524,7 +2530,7 @@
 				CODE_SIGN_ENTITLEMENTS = XCreds/xCreds.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 9150;
+				CURRENT_PROJECT_VERSION = 9151;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SC6H7VDLB4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2544,7 +2550,7 @@
 					"$(SDKROOT)/usr/lib/system",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 5.9.2;
+				MARKETING_VERSION = 5.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = no.uio.math.xcreds;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

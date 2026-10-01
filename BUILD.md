@@ -12,7 +12,7 @@ An Apple Developer account and signing certificate are not required for an unsig
 ## Build
 
 ```sh
-git clone https://github.com/twocanoes/xcreds.git
+git clone https://github.com/terjekv/xcreds.git
 cd xcreds
 
 xcodebuild -resolvePackageDependencies \
@@ -33,6 +33,26 @@ xcodebuild \
 ```
 
 Build products are written to `build/DerivedData/Build/Products/Debug`.
+
+## Regression checks
+
+```sh
+./scripts/test.sh
+```
+
+This compiles the production authentication policy, keychain utility, logging,
+and audit code into a standalone macOS XCTest runner. It tests method selection,
+missing tokens, aliases, network callbacks, logging preferences, audit privacy,
+and read/update/delete/ACL migration using disposable keychains. It also validates
+profiles, plists, XIBs, shell syntax, and consistent version metadata. The runner
+uses temporary files and never installs XCreds or changes login authorization.
+Disposable keychains use a `Library/Keychains` directory inside the temporary
+folder to exercise macOS signing partitions. Tests check that cleanup preserves
+the original keychain search list.
+The app scheme does not contain an Xcode test target; use this script to run tests.
+
+GitHub Actions runs these checks and an unsigned universal Release build on macOS 26.
+Before deployment, complete [the manual login smoke tests](TESTING.md).
 
 ## Public dependencies
 
@@ -55,13 +75,13 @@ The upstream release script is maintainer-specific and performs commits, tags, p
 
 ## Release installer
 
-The native release workflow archives and exports a Developer ID-signed universal app, creates a component package with the installation hooks, signs the installer, validates its payload, and optionally submits it to Apple's notary service:
+The native release workflow runs the regression checks, then archives and exports a Developer ID-signed universal app, creates a component package with the installation hooks, signs the installer, validates its payload, and optionally submits it to Apple's notary service:
 
 ```sh
 ./scripts/build_release_pkg.sh
 ```
 
-The output is `build/ReleaseArtifacts/XCreds_Build-<build>_Version-<version>-math-uio.pkg`. The suffix and the `math.uio.no` distribution marker in the app's Info.plist distinguish this derivative from an upstream Two Canoes release. The script refuses to overwrite an existing artifact. It accepts these optional environment variables:
+The output is `build/ReleaseArtifacts/XCreds_Build-<build>_Version-<version>-math-uio.pkg`, with a SHA-256 checksum and JSON build provenance alongside it. The package dependency revisions come from the checked-in `Package.resolved`. The suffix and the `math.uio.no` distribution marker in the app's Info.plist distinguish this derivative from an upstream Two Canoes release. The script refuses to overwrite an existing artifact. It accepts these optional environment variables:
 
 - `NOTARY_PROFILE`: a `notarytool` keychain profile. When omitted, the package is signed but not notarized.
 - `OUTPUT_DIR` and `WORK_DIR`: alternate artifact and temporary-work directories.
@@ -79,3 +99,26 @@ NOTARY_PROFILE=math-uio-notary ./scripts/build_release_pkg.sh
 ```
 
 On a remotely accessed Mac, the private-key access prompt is still a GUI operation. Run the first `codesign` or `productsign` invocation from Terminal.app in the logged-in desktop session and choose **Always Allow**. A headless build machine instead needs a dedicated keychain populated from an authorized PKCS#12 export, with access explicitly granted to `/usr/bin/codesign` and `/usr/bin/productsign`.
+
+## Tagging a release
+
+The math.uio version sequence is independent of Two Canoes' releases. This
+stabilization candidate is **5.9.3 (9151)**. Keep older installers for rollback.
+
+After reviewing and committing the changes, build from that clean commit and
+complete `TESTING.md` on a test Mac. Check the provenance JSON says `dirty: false`
+and, for a distributed package, `notarized: true`. Use a fork-specific tag and
+start with a draft release (substitute the tested commit SHA):
+
+```sh
+git tag -a math-uio-v5.9.3 TESTED_COMMIT_SHA -m 'math.uio XCreds 5.9.3 (9151)'
+git push origin math-uio-v5.9.3
+gh release create math-uio-v5.9.3 \
+  build/ReleaseArtifacts/XCreds_Build-9151_Version-5.9.3-math-uio.pkg* \
+  --repo terjekv/xcreds --verify-tag --draft \
+  --title 'math.uio XCreds 5.9.3 (9151)' --notes-file RELEASE.md
+```
+
+`RELEASE.md` records the candidate changes and upstream backport provenance.
+Publish the draft after recording the deployment smoke-test results. Automatic
+update checks are disabled in this fork; deployment is managed separately.

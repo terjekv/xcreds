@@ -108,13 +108,13 @@ class WebViewController: NSViewController, TokenManagerFeedbackDelegate {
                 TCSLogWithMark("getOidcLoginURL");
 
                 let url = try await self.getOidcLoginURL()
-                TCSLogWithMark("URL: \(url)");
+                TCSLogWithMark("Loading identity provider login page")
 
                 self.webView.load(URLRequest(url: url))
                 NetworkMonitor.shared.stopMonitoring()
             }
             catch {
-                TCSLogWithMark("error: \(error)");
+                TCSLogWithMark("Login page failed: \(AuthenticationPolicy.errorSummary(error))")
 
                 let loadPageTitle = DefaultsOverride.standardOverride.string(forKey: PrefKeys.loadPageTitle.rawValue)?.stripped ?? "loadPageTitle"
 
@@ -238,8 +238,8 @@ class WebViewController: NSViewController, TokenManagerFeedbackDelegate {
     func showErrorMessageAndDeny(_ message:String){
     }
     func tokenError(_ err: String) {
-        TCSLogErrorWithMark("authFailure: \(err)")
-        XCredsAudit().auditError(err)
+        TCSLogErrorWithMark("Identity provider authentication failed")
+        XCredsAudit().auditError("Identity provider authentication failed")
 
         //TODO: need to post this?
         NotificationCenter.default.post(name: Notification.Name("TCSTokensUpdated"), object: self, userInfo:["error":err])
@@ -403,24 +403,21 @@ extension WebViewController: WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        TCSLogErrorWithMark(error.localizedDescription)
+        TCSLogErrorWithMark("Navigation failed: \(AuthenticationPolicy.errorSummary(error))")
 
 
     }
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        TCSLogWithMark("Redirect error. if the error is \"Could not connect to the server.\", it is probably safe to ignore. If the error is \"unsupported URL\", please check your redirectURL in prefs matches the one defined in your OIDC app. Error: \(error.localizedDescription)")
+        TCSLogWithMark("Redirect error. if the error is \"Could not connect to the server.\", it is probably safe to ignore. If the error is \"unsupported URL\", please check your redirectURL in prefs matches the one defined in your OIDC app. Error: \(AuthenticationPolicy.errorSummary(error))")
     }
     func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
         Task{
             guard let url = webView.url else {
                 return
             }
-            TCSLogWithMark("WebDel:: Did Receive Redirect for: \(url.absoluteString)")
+            TCSLogWithMark("Received identity provider redirect")
 
-            TCSLogWithMark("URL: \(url.absoluteString)")
             let redirectURI = try await tokenManager.oidc().redirectURI
-            TCSLogWithMark("URL: \(url.absoluteString)")
-            TCSLogWithMark("redirectURI: \(redirectURI)")
 
             if (url.absoluteString.starts(with: (redirectURI))) {
                 TCSLogWithMark("got redirect URI match. separating URL")
@@ -438,12 +435,12 @@ extension WebViewController: WKNavigationDelegate {
                         do {
                             let shouldUseBasicAuth = DefaultsOverride.standardOverride.bool(forKey: PrefKeys.shouldUseBasicAuth.rawValue)
                             let tokenResponse = try await tokenManager.oidc().getToken(code: code, basicAuth: shouldUseBasicAuth)
-                            TCSLogWithMark("got token. Token ID: \(tokenResponse.idToken ?? "" )")
+                            TCSLogWithMark("Received token response")
                             tokenManager.tokenResponse(tokens: tokenResponse)
 
                         }
                         catch{
-                            TCSLogWithMark("error: \(error)")
+                            TCSLogWithMark("Token request failed: \(AuthenticationPolicy.errorSummary(error))")
                         }
 
                         return
@@ -512,7 +509,7 @@ extension WKWebView {
         WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
             records.forEach { record in
                 WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
-                print("Cookie ::: \(record) deleted")
+                TCSLogWithMark("Deleted website data")
             }
         }
     }

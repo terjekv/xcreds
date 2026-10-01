@@ -36,6 +36,7 @@ OSStatus XCredsLegacyACLSetContents(
     SecKeychainPromptSelector promptSelector
 );
 id _Nullable XCredsLegacyKeychainItemAccess(SecKeychainItemRef item);
+OSStatus XCredsLegacyKeychainItemSetAccess(SecKeychainItemRef item, SecAccessRef access, NSData *password);
 
 NS_ASSUME_NONNULL_END
 

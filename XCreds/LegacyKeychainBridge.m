@@ -5,6 +5,9 @@
 
 #import "LegacyKeychainBridge.h"
 
+// Required for file-keychain signing partitions; no public replacement exists.
+extern OSStatus SecKeychainItemSetAccessWithPassword(SecKeychainItemRef item, SecAccessRef access, UInt32 passLength, const void *password);
+
 NSString * const XCredsLegacyACLApplicationsKey = @"applications";
 NSString * const XCredsLegacyACLDescriptionKey = @"description";
 
@@ -99,6 +102,13 @@ id _Nullable XCredsLegacyKeychainItemAccess(SecKeychainItemRef item) {
         return nil;
     }
     return CFBridgingRelease(access);
+}
+
+OSStatus XCredsLegacyKeychainItemSetAccess(SecKeychainItemRef item, SecAccessRef access, NSData *password) {
+    // Keep a trailing NUL for the legacy API while passing the UTF-8 byte count.
+    NSMutableData *buffer = [password mutableCopy];
+    [buffer increaseLengthBy:1];
+    return SecKeychainItemSetAccessWithPassword(item, access, (UInt32)password.length, buffer.bytes);
 }
 
 #pragma clang diagnostic pop

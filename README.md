@@ -1,10 +1,16 @@
-# XCreds: Sync Your Cloud Password to your Mac
+# XCreds for math.uio
+
+This is the math.uio derivative of [Two Canoes XCreds](https://github.com/twocanoes/xcreds), using public dependencies, the `no.uio.math.xcreds` preference domain, and our own signing and release workflow. Version numbers are independent of upstream.
+
+See [BUILD.md](BUILD.md) for builds and releases, [RELEASE.md](RELEASE.md) for the stabilization candidate, and [TESTING.md](TESTING.md) for deployment verification.
+
+XCreds syncs your cloud password with your Mac login password.
 
 ## How It Works
 XCreds has 2 components: the XCreds app that runs in user space and XCreds Login Window that is a security agent that runs when the user is logging in to their mac. Both the security agent and the app share keychain items in the user's keychain to key track of the current local password and the tokens from the cloud provider. Both items prompt the user withe a web view to authenticate to their cloud provider, verify log in was successful and then updates the local password and user keychain passwords as needed. 
 
 ## Requirements
-XCreds currently works with Azure and Google cloud as an OIDC identity provider. It has been tested on macOS Monterey but should support earlier version of macOS.
+This fork targets macOS 13.5 or later and builds with Xcode 26.6. XCreds supports OIDC providers including Microsoft Entra ID and Google, plus Active Directory. Install configuration profiles in the `no.uio.math.xcreds` domain; upstream `com.twocanoes.xcreds` profiles must be migrated.
 
 ## Components
 XCreds consists of XCreds Login and XCreds app. They do similar tasks but run at different times. 

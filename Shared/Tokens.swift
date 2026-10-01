@@ -34,16 +34,16 @@ struct Creds {
    }
     func hasTokens() -> Bool {
 
-        return (self.accessToken != nil) && (self.idToken != nil) && (self.refreshToken != nil)
+        return AuthenticationPolicy.hasAccessToken(self.accessToken) && (self.idToken != nil) && (self.refreshToken != nil)
     }
 
     func hasAccessAndRefresh() -> Bool {
 
-        return (self.accessToken != nil) && (self.refreshToken != nil)
+        return AuthenticationPolicy.hasAccessToken(self.accessToken) && (self.refreshToken != nil)
     }
     func hasAccess() -> Bool {
 
-        return (self.accessToken != nil)
+        return AuthenticationPolicy.hasAccessToken(self.accessToken)
     }
 
 }
